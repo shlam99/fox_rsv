@@ -17,7 +17,7 @@ echo "Starting pipeline..."
 echo "Step 0: Setting up directory structure and checking dependencies..."
 
 # Make directories
-mkdir -p qc_reads aligned_bams consensus_sequences logs
+mkdir -p qc_reads aligned_bams consensus_sequences qc_logs
 
 # Check for required tools
 command -v filtlong >/dev/null 2>&1 || { echo >&2 "Error: filtlong not found."; exit 1; }
@@ -46,7 +46,7 @@ for i in {1..22}; do
     filtlong --min_length $MIN_LENGTH \
              --keep_percent $KEEP_PERCENT \
              --target_bases $TARGET_BASES \
-             "$FASTQ_IN" 2> "logs/${SAMPLE_PREFIX}_barcode${BARCODE_PADDED}.filtlong.log" | \
+             "$FASTQ_IN" 2> "qc_logs/${SAMPLE_PREFIX}_barcode${BARCODE_PADDED}.filtlong.log" | \
     gzip > "$FASTQ_FILTERED"
 done
 
