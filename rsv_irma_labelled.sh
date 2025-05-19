@@ -10,6 +10,7 @@ step_complete() {
     echo ""
 }
 
+START_TIME=$(date +%s)
 
 ########################################
 # Step 0: Setup and dependency checks
@@ -201,3 +202,7 @@ echo "- RSVB: irma_consensus/RSVB_${BATCH}.fasta"
 echo "- RSVAD: irma_consensus/RSVAD_${BATCH}.fasta"
 echo "- RSVBD: irma_consensus/RSVBD_${BATCH}.fasta"
 echo "========================================"
+
+
+END_TIME=$(date +%s)
+echo "Total pipeline runtime: $((END_TIME - START_TIME)) seconds"
