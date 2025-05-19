@@ -83,24 +83,22 @@ echo "- Consensus sequence: irma_results/amended_sequences/barcode${BARCODE_PADD
 echo "- Reference used: irma_results/RSV_*.fasta"
 echo "========================================"
 
-
 ########################################
 # Step 3: Select and pool consensus sequences
 ########################################
 echo "Step 3: Selecting and pooling consensus sequences by RSV type..."
 
-# Initialize output files (changed to irma_consensus)
-> irma_consensus/RSV_A_consensus.fasta
-> irma_consensus/RSV_B_consensus.fasta
-> irma_consensus/RSV_AD_consensus.fasta
-> irma_consensus/RSV_BC_consensus.fasta
-> irma_consensus/RSV_BD_consensus.fasta
+# Initialize output files
+> irma_consensus/RSVA_consensus.fasta
+> irma_consensus/RSVB_consensus.fasta
+> irma_consensus/RSVAD_consensus.fasta
+> irma_consensus/RSVBD_consensus.fasta
 
 for i in {1..22}; do
     BARCODE_PADDED=$(printf "%02d" "$i")
     IRMA_OUTDIR="irma_results/barcode${BARCODE_PADDED}"
     CONSENSUS_SOURCE="${IRMA_OUTDIR}/amended_consensus/barcode${BARCODE_PADDED}.fa"
-    TYPE_FILE="${IRMA_OUTDIR}/RSV_"*".fasta"
+    TYPE_FILE="${IRMA_OUTDIR}/RSV_"*".fasta"  # This will match RSV_A.fasta, RSV_B.fasta, etc.
     
     echo "Processing barcode ${BARCODE_PADDED}..."
 
@@ -114,13 +112,12 @@ for i in {1..22}; do
     RSV_TYPE=""
     for file in $TYPE_FILE; do
         case $(basename "$file") in
-            "RSV_A.fasta") RSV_TYPE="RSV_A" ;;
-            "RSV_B.fasta") RSV_TYPE="RSV_B" ;;
-            "RSV_AD.fasta") RSV_TYPE="RSV_AD" ;;
-            "RSV_BC.fasta") RSV_TYPE="RSV_BC" ;;
-            "RSV_BD.fasta") RSV_TYPE="RSV_BD" ;;
+            "RSV_A.fasta") RSV_TYPE="RSVA" ;;
+            "RSV_B.fasta") RSV_TYPE="RSVB" ;;
+            "RSV_AD.fasta") RSV_TYPE="RSVAD" ;;
+            "RSV_BD.fasta") RSV_TYPE="RSVBD" ;;
         esac
-        break
+        break  # We only need to check one file
     done
 
     if [ -z "$RSV_TYPE" ]; then
@@ -128,26 +125,24 @@ for i in {1..22}; do
         continue
     fi
 
-    # Add to appropriate consensus file (changed to irma_consensus)
+    # Add to appropriate consensus file
     echo "Adding barcode ${BARCODE_PADDED} to ${RSV_TYPE} consensus..."
     sed "s/^>/>${SAMPLE_PREFIX}_barcode${BARCODE_PADDED}|/" "$CONSENSUS_SOURCE" >> "irma_consensus/${RSV_TYPE}_consensus.fasta"
 done
 
-# Count the number of sequences in each file (changed to irma_consensus)
-RSV_A_COUNT=$(grep -c "^>" irma_consensus/RSV_A_consensus.fasta || echo 0)
-RSV_B_COUNT=$(grep -c "^>" irma_consensus/RSV_B_consensus.fasta || echo 0)
-RSV_AD_COUNT=$(grep -c "^>" irma_consensus/RSV_AD_consensus.fasta || echo 0)
-RSV_BC_COUNT=$(grep -c "^>" irma_consensus/RSV_BC_consensus.fasta || echo 0)
-RSV_BD_COUNT=$(grep -c "^>" irma_consensus/RSV_BD_consensus.fasta || echo 0)
+# Count the number of sequences in each file
+RSVA_COUNT=$(grep -c "^>" irma_consensus/RSVA_consensus.fasta || echo 0)
+RSVB_COUNT=$(grep -c "^>" irma_consensus/RSVB_consensus.fasta || echo 0)
+RSVAD_COUNT=$(grep -c "^>" irma_consensus/RSVAD_consensus.fasta || echo 0)
+RSVBD_COUNT=$(grep -c "^>" irma_consensus/RSVBD_consensus.fasta || echo 0)
 
-step_complete "3" "Success!!: Selected RSVs (A:$RSV_A_COUNT B:$RSV_B_COUNT AD:$RSV_AD_COUNT BC:$RSV_BC_COUNT BD:$RSV_BD_COUNT)"
+step_complete "3" "Success!!: Selected RSVs (A:$RSVA_COUNT B:$RSVB_COUNT AD:$RSVAD_COUNT BD:$RSVBD_COUNT)"
 
 echo ""
 echo "========================================"
 echo "Output files:"
-echo "- RSV_A consensus: irma_consensus/RSV_A_consensus.fasta"
-echo "- RSV_B consensus: irma_consensus/RSV_B_consensus.fasta"
-echo "- RSV_AD consensus: irma_consensus/RSV_AD_consensus.fasta"
-echo "- RSV_BC consensus: irma_consensus/RSV_BC_consensus.fasta"
-echo "- RSV_BD consensus: irma_consensus/RSV_BD_consensus.fasta"
+echo "- RSVA consensus: irma_consensus/RSVA_consensus.fasta"
+echo "- RSVB consensus: irma_consensus/RSVB_consensus.fasta"
+echo "- RSVAD consensus: irma_consensus/RSVAD_consensus.fasta"
+echo "- RSVBD consensus: irma_consensus/RSVBD_consensus.fasta"
 echo "========================================"
