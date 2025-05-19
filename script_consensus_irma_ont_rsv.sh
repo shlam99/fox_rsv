@@ -127,7 +127,7 @@ for i in {1..22}; do
 
     # Add to appropriate consensus file
     echo "Adding barcode ${BARCODE_PADDED} to ${RSV_TYPE} consensus..."
-    sed "s/^>/>${SAMPLE_PREFIX}_barcode${BARCODE_PADDED}|/" "$CONSENSUS_SOURCE" >> "irma_consensus/${RSV_TYPE}_consensus.fasta"
+    sed "s/^>/>$CONSENSUS_SOURCE" >> "irma_consensus/${RSV_TYPE}_consensus.fasta"
 done
 
 # Count the number of sequences in each file
