@@ -17,7 +17,7 @@ echo "Starting pipeline..."
 echo "Step 0: Setting up directory structure and checking dependencies..."
 
 # Make directories
-mkdir -p qc_reads/qc_logs irma_results consensus_sequences
+mkdir -p qc_reads/qc_logs irma_results irma_consensus
 
 # Check for required tools
 command -v filtlong >/dev/null 2>&1 || { echo >&2 "Error: filtlong not found."; exit 1; }
@@ -84,24 +84,23 @@ echo "- Reference used: irma_results/RSV_*.fasta"
 echo "========================================"
 
 
-
 ########################################
 # Step 3: Select and pool consensus sequences
 ########################################
 echo "Step 3: Selecting and pooling consensus sequences by RSV type..."
 
-# Initialize output files
-> consensus_sequences/RSV_A_consensus.fasta
-> consensus_sequences/RSV_B_consensus.fasta
-> consensus_sequences/RSV_AD_consensus.fasta
-> consensus_sequences/RSV_BC_consensus.fasta
-> consensus_sequences/RSV_BD_consensus.fasta
+# Initialize output files (changed to irma_consensus)
+> irma_consensus/RSV_A_consensus.fasta
+> irma_consensus/RSV_B_consensus.fasta
+> irma_consensus/RSV_AD_consensus.fasta
+> irma_consensus/RSV_BC_consensus.fasta
+> irma_consensus/RSV_BD_consensus.fasta
 
 for i in {1..22}; do
     BARCODE_PADDED=$(printf "%02d" "$i")
     IRMA_OUTDIR="irma_results/barcode${BARCODE_PADDED}"
     CONSENSUS_SOURCE="${IRMA_OUTDIR}/amended_consensus/barcode${BARCODE_PADDED}.fa"
-    TYPE_FILE="${IRMA_OUTDIR}/RSV_"*".fasta"  # This will match RSV_A.fasta, RSV_B.fasta, etc.
+    TYPE_FILE="${IRMA_OUTDIR}/RSV_"*".fasta"
     
     echo "Processing barcode ${BARCODE_PADDED}..."
 
@@ -121,7 +120,7 @@ for i in {1..22}; do
             "RSV_BC.fasta") RSV_TYPE="RSV_BC" ;;
             "RSV_BD.fasta") RSV_TYPE="RSV_BD" ;;
         esac
-        break  # We only need to check one file
+        break
     done
 
     if [ -z "$RSV_TYPE" ]; then
@@ -129,26 +128,26 @@ for i in {1..22}; do
         continue
     fi
 
-    # Add to appropriate consensus file
+    # Add to appropriate consensus file (changed to irma_consensus)
     echo "Adding barcode ${BARCODE_PADDED} to ${RSV_TYPE} consensus..."
-    sed "s/^>/>${SAMPLE_PREFIX}_barcode${BARCODE_PADDED}|/" "$CONSENSUS_SOURCE" >> "consensus_sequences/${RSV_TYPE}_consensus.fasta"
+    sed "s/^>/>${SAMPLE_PREFIX}_barcode${BARCODE_PADDED}|/" "$CONSENSUS_SOURCE" >> "irma_consensus/${RSV_TYPE}_consensus.fasta"
 done
 
-# Count the number of sequences in each file
-RSV_A_COUNT=$(grep -c "^>" consensus_sequences/RSV_A_consensus.fasta || echo 0)
-RSV_B_COUNT=$(grep -c "^>" consensus_sequences/RSV_B_consensus.fasta || echo 0)
-RSV_AD_COUNT=$(grep -c "^>" consensus_sequences/RSV_AD_consensus.fasta || echo 0)
-RSV_BC_COUNT=$(grep -c "^>" consensus_sequences/RSV_BC_consensus.fasta || echo 0)
-RSV_BD_COUNT=$(grep -c "^>" consensus_sequences/RSV_BD_consensus.fasta || echo 0)
+# Count the number of sequences in each file (changed to irma_consensus)
+RSV_A_COUNT=$(grep -c "^>" irma_consensus/RSV_A_consensus.fasta || echo 0)
+RSV_B_COUNT=$(grep -c "^>" irma_consensus/RSV_B_consensus.fasta || echo 0)
+RSV_AD_COUNT=$(grep -c "^>" irma_consensus/RSV_AD_consensus.fasta || echo 0)
+RSV_BC_COUNT=$(grep -c "^>" irma_consensus/RSV_BC_consensus.fasta || echo 0)
+RSV_BD_COUNT=$(grep -c "^>" irma_consensus/RSV_BD_consensus.fasta || echo 0)
 
 step_complete "3" "Success!!: Selected RSVs (A:$RSV_A_COUNT B:$RSV_B_COUNT AD:$RSV_AD_COUNT BC:$RSV_BC_COUNT BD:$RSV_BD_COUNT)"
 
 echo ""
 echo "========================================"
 echo "Output files:"
-echo "- RSV_A consensus: consensus_sequences/RSV_A_consensus.fasta"
-echo "- RSV_B consensus: consensus_sequences/RSV_B_consensus.fasta"
-echo "- RSV_AD consensus: consensus_sequences/RSV_AD_consensus.fasta"
-echo "- RSV_BC consensus: consensus_sequences/RSV_BC_consensus.fasta"
-echo "- RSV_BD consensus: consensus_sequences/RSV_BD_consensus.fasta"
+echo "- RSV_A consensus: irma_consensus/RSV_A_consensus.fasta"
+echo "- RSV_B consensus: irma_consensus/RSV_B_consensus.fasta"
+echo "- RSV_AD consensus: irma_consensus/RSV_AD_consensus.fasta"
+echo "- RSV_BC consensus: irma_consensus/RSV_BC_consensus.fasta"
+echo "- RSV_BD consensus: irma_consensus/RSV_BD_consensus.fasta"
 echo "========================================"
