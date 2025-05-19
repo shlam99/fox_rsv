@@ -78,68 +78,77 @@ step_complete "2" "Success!!"
 
 echo ""
 echo "========================================"
-echo "Output files: irma_results/barcode${BARCODE_PADDED}/consensus.fasta"
+echo "Output files:"
+echo "- Consensus sequence: irma_results/amended_sequences/barcode${BARCODE_PADDED}.fa"
+echo "- Reference used: irma_results/RSV_*.fasta"
 echo "========================================"
+
+
 
 ########################################
 # Step 3: Select and pool consensus sequences
 ########################################
 echo "Step 3: Selecting and pooling consensus sequences by RSV type..."
 
-> consensus_sequences/RSVA_consensus.fasta
-> consensus_sequences/RSVB_consensus.fasta
-> consensus_sequences/RSVAD_consensus.fasta
-> consensus_sequences/RSVBC_consensus.fasta
-> consensus_sequences/RSVBD_consensus.fasta
+# Initialize output files
+> consensus_sequences/RSV_A_consensus.fasta
+> consensus_sequences/RSV_B_consensus.fasta
+> consensus_sequences/RSV_AD_consensus.fasta
+> consensus_sequences/RSV_BC_consensus.fasta
+> consensus_sequences/RSV_BD_consensus.fasta
 
 for i in {1..22}; do
     BARCODE_PADDED=$(printf "%02d" "$i")
     IRMA_OUTDIR="irma_results/barcode${BARCODE_PADDED}"
-    CONSENSUS="${IRMA_OUTDIR}/consensus.fasta"
+    CONSENSUS_SOURCE="${IRMA_OUTDIR}/amended_consensus/barcode${BARCODE_PADDED}.fa"
+    TYPE_FILE="${IRMA_OUTDIR}/RSV_"*".fasta"  # This will match RSV_A.fasta, RSV_B.fasta, etc.
     
-    echo "Processing ${CONSENSUS}..."
-    
-    # Determine which RSV type is present in the IRMA output
-    RSV_TYPE=$(grep "^>" "$CONSENSUS" | cut -d'|' -f2 | head -n1)
-    
-    # Add barcode information to the header and append to appropriate file
-    case $RSV_TYPE in
-        "RSVA")
-            sed "s/^>/>${SAMPLE_PREFIX}_barcode${BARCODE_PADDED}|/" "$CONSENSUS" >> consensus_sequences/RSVA_consensus.fasta
-            ;;
-        "RSVB")
-            sed "s/^>/>${SAMPLE_PREFIX}_barcode${BARCODE_PADDED}|/" "$CONSENSUS" >> consensus_sequences/RSVB_consensus.fasta
-            ;;
-        "RSVAD")
-            sed "s/^>/>${SAMPLE_PREFIX}_barcode${BARCODE_PADDED}|/" "$CONSENSUS" >> consensus_sequences/RSVAD_consensus.fasta
-            ;;
-        "RSVBC")
-            sed "s/^>/>${SAMPLE_PREFIX}_barcode${BARCODE_PADDED}|/" "$CONSENSUS" >> consensus_sequences/RSVBC_consensus.fasta
-            ;;
-        "RSVBD")
-            sed "s/^>/>${SAMPLE_PREFIX}_barcode${BARCODE_PADDED}|/" "$CONSENSUS" >> consensus_sequences/RSVBD_consensus.fasta
-            ;;
-        *)
-            echo "WARNING: Unknown RSV type in ${CONSENSUS}" >&2
-            ;;
-    esac
+    echo "Processing barcode ${BARCODE_PADDED}..."
+
+    # Check if consensus file exists
+    if [ ! -f "$CONSENSUS_SOURCE" ]; then
+        echo "WARNING: Consensus file not found for barcode ${BARCODE_PADDED}" >&2
+        continue
+    fi
+
+    # Determine RSV type from the parent directory files
+    RSV_TYPE=""
+    for file in $TYPE_FILE; do
+        case $(basename "$file") in
+            "RSV_A.fasta") RSV_TYPE="RSV_A" ;;
+            "RSV_B.fasta") RSV_TYPE="RSV_B" ;;
+            "RSV_AD.fasta") RSV_TYPE="RSV_AD" ;;
+            "RSV_BC.fasta") RSV_TYPE="RSV_BC" ;;
+            "RSV_BD.fasta") RSV_TYPE="RSV_BD" ;;
+        esac
+        break  # We only need to check one file
+    done
+
+    if [ -z "$RSV_TYPE" ]; then
+        echo "WARNING: Could not determine RSV type for barcode ${BARCODE_PADDED}" >&2
+        continue
+    fi
+
+    # Add to appropriate consensus file
+    echo "Adding barcode ${BARCODE_PADDED} to ${RSV_TYPE} consensus..."
+    sed "s/^>/>${SAMPLE_PREFIX}_barcode${BARCODE_PADDED}|/" "$CONSENSUS_SOURCE" >> "consensus_sequences/${RSV_TYPE}_consensus.fasta"
 done
 
 # Count the number of sequences in each file
-RSVA_COUNT=$(grep -c "^>" consensus_sequences/RSVA_consensus.fasta)
-RSVB_COUNT=$(grep -c "^>" consensus_sequences/RSVB_consensus.fasta)
-RSVAD_COUNT=$(grep -c "^>" consensus_sequences/RSVAD_consensus.fasta)
-RSVBC_COUNT=$(grep -c "^>" consensus_sequences/RSVBC_consensus.fasta)
-RSVBD_COUNT=$(grep -c "^>" consensus_sequences/RSVBD_consensus.fasta)
+RSV_A_COUNT=$(grep -c "^>" consensus_sequences/RSV_A_consensus.fasta || echo 0)
+RSV_B_COUNT=$(grep -c "^>" consensus_sequences/RSV_B_consensus.fasta || echo 0)
+RSV_AD_COUNT=$(grep -c "^>" consensus_sequences/RSV_AD_consensus.fasta || echo 0)
+RSV_BC_COUNT=$(grep -c "^>" consensus_sequences/RSV_BC_consensus.fasta || echo 0)
+RSV_BD_COUNT=$(grep -c "^>" consensus_sequences/RSV_BD_consensus.fasta || echo 0)
 
-step_complete "3" "Success!!: Selected RSVs (A:$RSVA_COUNT B:$RSVB_COUNT AD:$RSVAD_COUNT BC:$RSVBC_COUNT BD:$RSVBD_COUNT)"
+step_complete "3" "Success!!: Selected RSVs (A:$RSV_A_COUNT B:$RSV_B_COUNT AD:$RSV_AD_COUNT BC:$RSV_BC_COUNT BD:$RSV_BD_COUNT)"
 
 echo ""
 echo "========================================"
 echo "Output files:"
-echo "- RSVA consensus: consensus_sequences/RSVA_consensus.fasta"
-echo "- RSVB consensus: consensus_sequences/RSVB_consensus.fasta"
-echo "- RSVAD consensus: consensus_sequences/RSVAD_consensus.fasta"
-echo "- RSVBC consensus: consensus_sequences/RSVBC_consensus.fasta"
-echo "- RSVBD consensus: consensus_sequences/RSVBD_consensus.fasta"
+echo "- RSV_A consensus: consensus_sequences/RSV_A_consensus.fasta"
+echo "- RSV_B consensus: consensus_sequences/RSV_B_consensus.fasta"
+echo "- RSV_AD consensus: consensus_sequences/RSV_AD_consensus.fasta"
+echo "- RSV_BC consensus: consensus_sequences/RSV_BC_consensus.fasta"
+echo "- RSV_BD consensus: consensus_sequences/RSV_BD_consensus.fasta"
 echo "========================================"
