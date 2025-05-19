@@ -138,7 +138,7 @@ for i in {1..22}; do
     fi
     
     echo "Adding ${SAMPLE_ID} to ${RSV_TYPE} consensus..."
-    sed "s/^>.*/>${SAMPLE_ID}|/" "$CONSENSUS_SOURCE" >> "irma_consensus/${RSV_TYPE}_consensus.fasta"
+    sed "s/^>.*/>${SAMPLE_ID}/" "$CONSENSUS_SOURCE" >> "irma_consensus/${RSV_TYPE}_consensus.fasta"
 done
 
 # Remove empty consensus files
