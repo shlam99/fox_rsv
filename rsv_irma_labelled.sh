@@ -16,19 +16,44 @@ START_TIME=$(date +%s)
 # Step 0: Setup and dependency checks
 ########################################
 echo "Starting pipeline..."
-echo "Step 0: Setting up directory structure and checking dependencies..."
+echo "Step 0: Setting up directory structure, checking input files, and checking dependencies..."
 
 # Make directories
 mkdir -p qc_reads/qc_logs irma_results irma_consensus
 
 # Check for required tools
+command -v samtools >/dev/null 2>&1 || { echo >&2 "Error: samtools not found."; exit 1; }
 command -v filtlong >/dev/null 2>&1 || { echo >&2 "Error: filtlong not found."; exit 1; }
 command -v IRMA >/dev/null 2>&1 || { echo >&2 "Error: IRMA not found."; exit 1; }
 
-# Compress FASTQ files if needed
-if ls *.fastq >/dev/null 2>&1; then
-    echo "Compressing FASTQ files..."
-    gzip *.fastq
+# Check for input files and convert if needed
+HAS_BAM=$(ls *.bam 2>/dev/null | wc -l)
+HAS_FASTQ=$(ls *.fastq *.fastq.gz 2>/dev/null | wc -l)
+
+if [ "$HAS_BAM" -gt 0 ]; then
+    echo "Found BAM files, converting directly to compressed FASTQ..."
+    for i in {1..22}; do
+        BARCODE_PADDED=$(printf "%02d" "$i")
+        BAM_IN="${SAMPLE_PREFIX}_barcode${BARCODE_PADDED}.bam"
+        FASTQ_OUT="${SAMPLE_PREFIX}_barcode${BARCODE_PADDED}.fastq.gz"
+        
+        if [ -f "$BAM_IN" ]; then
+            echo "Converting ${BAM_IN} directly to ${FASTQ_OUT}..."
+            samtools fastq "$BAM_IN" | gzip > "$FASTQ_OUT"
+        fi
+    done
+elif [ "$HAS_FASTQ" -gt 0 ]; then
+    echo "Found FASTQ files, compressing if needed..."
+    # Compress any uncompressed FASTQ files
+    for f in *.fastq; do
+        if [ -f "$f" ]; then
+            echo "Compressing ${f}..."
+            gzip "$f"
+        fi
+    done
+else
+    echo "Error: No input files found (expected either .bam or .fastq/.fastq.gz files)"
+    exit 1
 fi
 
 step_complete "0" "Setup and dependency checks"
@@ -44,12 +69,16 @@ for i in {1..22}; do
     FASTQ_IN="${SAMPLE_PREFIX}_barcode${BARCODE_PADDED}.fastq.gz"
     FASTQ_FILTERED="qc_reads/${SAMPLE_PREFIX}_barcode${BARCODE_PADDED}.filtered.fastq.gz"
     
-    echo "Processing ${FASTQ_IN}..."
-    filtlong --min_length $MIN_LENGTH \
-             --keep_percent $KEEP_PERCENT \
-             --target_bases $TARGET_BASES \
-             "$FASTQ_IN" 2> "qc_reads/qc_logs/${SAMPLE_PREFIX}_barcode${BARCODE_PADDED}.filtlong.log" | \
-    gzip > "$FASTQ_FILTERED"
+    if [ -f "$FASTQ_IN" ]; then
+        echo "Processing ${FASTQ_IN}..."
+        filtlong --min_length $MIN_LENGTH \
+                 --keep_percent $KEEP_PERCENT \
+                 --target_bases $TARGET_BASES \
+                 "$FASTQ_IN" 2> "qc_reads/qc_logs/${SAMPLE_PREFIX}_barcode${BARCODE_PADDED}.filtlong.log" | \
+        gzip > "$FASTQ_FILTERED"
+    else
+        echo "Warning: Input FASTQ file ${FASTQ_IN} not found"
+    fi
 done
 
 step_complete "1" "Success!!"
@@ -70,12 +99,14 @@ for i in {1..22}; do
     FASTQ_FILTERED="qc_reads/${SAMPLE_PREFIX}_barcode${BARCODE_PADDED}.filtered.fastq.gz"
     IRMA_OUTDIR="irma_results/barcode${BARCODE_PADDED}"
     
-    echo "Processing ${FASTQ_FILTERED} with IRMA..."
-    
-    IRMA RSV_ont \
-        "$FASTQ_FILTERED" \
-        "$IRMA_OUTDIR" \
-
+    if [ -f "$FASTQ_FILTERED" ]; then
+        echo "Processing ${FASTQ_FILTERED} with IRMA..."
+        IRMA RSV_ont \
+            "$FASTQ_FILTERED" \
+            "$IRMA_OUTDIR"
+    else
+        echo "Warning: Filtered FASTQ file ${FASTQ_FILTERED} not found"
+    fi
 done
 
 step_complete "2" "Success!!"
