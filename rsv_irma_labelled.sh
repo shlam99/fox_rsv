@@ -32,7 +32,7 @@ HAS_FASTQ=$(ls *.fastq *.fastq.gz 2>/dev/null | wc -l)
 
 if [ "$HAS_BAM" -gt 0 ]; then
     echo "Found BAM files, converting directly to compressed FASTQ..."
-    for i in {1..22}; do
+    for i in {1..24}; do
         BARCODE_PADDED=$(printf "%02d" "$i")
         BAM_IN="${SAMPLE_PREFIX}_barcode${BARCODE_PADDED}.bam"
         FASTQ_OUT="${SAMPLE_PREFIX}_barcode${BARCODE_PADDED}.fastq.gz"
@@ -64,7 +64,7 @@ step_complete "0" "Setup and dependency checks"
 ########################################
 echo "Step 1: Performing quality filtering with filtlong..."
 
-for i in {1..22}; do
+for i in {1..24}; do
     BARCODE_PADDED=$(printf "%02d" "$i")
     FASTQ_IN="${SAMPLE_PREFIX}_barcode${BARCODE_PADDED}.fastq.gz"
     FASTQ_FILTERED="qc_reads/${SAMPLE_PREFIX}_barcode${BARCODE_PADDED}.filtered.fastq.gz"
@@ -94,7 +94,7 @@ echo "========================================"
 ########################################
 echo "Step 2: Running IRMA for each barcode..."
 
-for i in {1..22}; do
+for i in {1..24}; do
     BARCODE_PADDED=$(printf "%02d" "$i")
     FASTQ_FILTERED="qc_reads/${SAMPLE_PREFIX}_barcode${BARCODE_PADDED}.filtered.fastq.gz"
     IRMA_OUTDIR="irma_results/barcode${BARCODE_PADDED}"
@@ -130,7 +130,7 @@ echo "Step 3: Selecting and pooling consensus sequences by RSV type..."
 > irma_consensus/RSVAD_consensus.fasta
 > irma_consensus/RSVBD_consensus.fasta
 
-for i in {1..22}; do
+for i in {1..24}; do
     BARCODE_PADDED=$(printf "%02d" "$i")
     BARCODE_ID="barcode${BARCODE_PADDED}"
     IRMA_OUTDIR="irma_results/${BARCODE_ID}"
