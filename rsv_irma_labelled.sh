@@ -53,7 +53,6 @@ elif [ "$HAS_FASTQ" -gt 0 ]; then
     done
 else
     echo "Error: No input files found (expected either .bam or .fastq/.fastq.gz files)"
-    exit 1
 fi
 
 step_complete "0" "Setup and dependency checks"
