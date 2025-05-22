@@ -1,6 +1,4 @@
 #!/usr/bin/env bash
-# ^^ Use bash shebang for consistency (zsh will emulate bash if needed)
-
 source config.sh
 
 # Function to display step completion
