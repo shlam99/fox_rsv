@@ -1,7 +1,7 @@
 #!/bin/bash
-source config.sh
 
 # Export all variables needed for parallel processing
+source config.sh
 export SAMPLE_PREFIX BATCH THREADS MIN_LENGTH TARGET_BASES KEEP_PERCENT
 
 # Function to display step completion
