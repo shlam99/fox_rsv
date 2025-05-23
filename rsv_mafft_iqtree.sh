@@ -1,5 +1,5 @@
 #!/bin/bash
-THREADS=2
+THREADS=$(nproc --all)
 
 # Function to display step completion
 step_complete() {
