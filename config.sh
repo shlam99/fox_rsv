@@ -38,7 +38,7 @@ declare -A SAMPLE_IDS=(
 REFERENCE_GENOME=""
 
 # Filtering Parameters
-THREADS=4
+THREADS=$(nproc --all)
 MIN_QUALITY=7
 MIN_LENGTH=500
 MAX_LENGTH=50000
