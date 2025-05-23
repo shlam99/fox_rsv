@@ -1,5 +1,5 @@
 #!/bin/bash
-source config.sh
+THREADS=2
 
 # Function to display step completion
 step_complete() {
