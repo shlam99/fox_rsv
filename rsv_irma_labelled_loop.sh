@@ -118,6 +118,19 @@ echo "- Consensus sequence: irma_results/amended_sequences/barcode${BARCODE_PADD
 echo "- Reference used: irma_results/RSV_*.fasta"
 echo "========================================"
 
+#!/bin/bash
+source config.sh
+
+# Function to display step completion
+step_complete() {
+    echo ""
+    echo "========================================"
+    echo "Step $1 complete: $2"
+    echo "========================================"
+    echo ""
+}
+
+START_TIME=$(date +%s)
 
 ########################################
 # Step 3: Select and pool consensus sequences
@@ -162,15 +175,9 @@ for i in {1..24}; do
         continue
     fi
 
-    # Add to appropriate consensus file with sample ID
-    SAMPLE_ID="${SAMPLE_IDS[$BARCODE_ID]}"
-    if [ -z "$SAMPLE_ID" ]; then
-        echo "WARNING: No sample ID mapped for ${BARCODE_ID}" >&2
-        SAMPLE_ID="${BARCODE_ID}"
-    fi
-    
-    echo "Adding ${SAMPLE_ID} to ${RSV_TYPE} consensus..."
-    sed "s/^>.*/>${SAMPLE_ID}/" "$CONSENSUS_SOURCE" >> "irma_consensus/${RSV_TYPE}_consensus.fasta"
+    # Add to appropriate consensus file with barcode prefix (Step 3 format)
+    echo "Adding ${BARCODE_ID} to ${RSV_TYPE} consensus..."
+    sed "s/^>/>${SAMPLE_PREFIX}_barcode${BARCODE_PADDED}|/" "$CONSENSUS_SOURCE" >> "irma_consensus/${RSV_TYPE}_consensus.fasta"
 done
 
 # Remove empty consensus files
@@ -199,21 +206,61 @@ echo "- RSVAD: irma_consensus/RSVAD_consensus.fasta"
 echo "- RSVBD: irma_consensus/RSVBD_consensus.fasta"
 echo "========================================"
 
-
 ########################################
-# Step 4: Create batch-labeled versions
+# Step 4: Create batch-labeled versions with sample IDs
 ########################################
 echo "Step 4: Creating batch-labeled consensus files (${BATCH})..."
 
-for type in RSVA RSVB RSVAD RSVBD; do
-    INPUT="irma_consensus/${type}_consensus.fasta"
-    OUTPUT="irma_consensus/${type}_${BATCH}.fasta"
+# Initialize batch files
+> irma_consensus/RSVA_${BATCH}.fasta
+> irma_consensus/RSVB_${BATCH}.fasta
+> irma_consensus/RSVAD_${BATCH}.fasta
+> irma_consensus/RSVBD_${BATCH}.fasta
+
+for i in {1..24}; do
+    BARCODE_PADDED=$(printf "%02d" "$i")
+    BARCODE_ID="barcode${BARCODE_PADDED}"
+    IRMA_OUTDIR="irma_results/${BARCODE_ID}"
+    CONSENSUS_SOURCE="${IRMA_OUTDIR}/amended_consensus/${BARCODE_ID}.fa"
+    TYPE_FILE="${IRMA_OUTDIR}/RSV_"*".fasta"
     
-    if [ -f "$INPUT" ] && [ -s "$INPUT" ]; then
-        cp "$INPUT" "$OUTPUT"
-        echo "Created batch-labeled: $OUTPUT"
-    else
-        echo "No ${type} consensus found to label"
+    # Check if consensus file exists
+    if [ ! -f "$CONSENSUS_SOURCE" ]; then
+        continue
+    fi
+
+    # Determine RSV type
+    RSV_TYPE=""
+    for file in $TYPE_FILE; do
+        case $(basename "$file") in
+            "RSV_A.fasta") RSV_TYPE="RSVA" ;;
+            "RSV_B.fasta") RSV_TYPE="RSVB" ;;
+            "RSV_AD.fasta") RSV_TYPE="RSVAD" ;;
+            "RSV_BD.fasta") RSV_TYPE="RSVBD" ;;
+        esac
+        break
+    done
+
+    if [ -z "$RSV_TYPE" ]; then
+        continue
+    fi
+
+    # Get sample ID for batch file
+    SAMPLE_ID="${SAMPLE_IDS[$BARCODE_ID]}"
+    if [ -z "$SAMPLE_ID" ]; then
+        SAMPLE_ID="${BARCODE_ID}"
+    fi
+    
+    # Add to batch file with sample ID (Step 4 format)
+    sed "s/^>.*/>${SAMPLE_ID}/" "$CONSENSUS_SOURCE" >> "irma_consensus/${RSV_TYPE}_${BATCH}.fasta"
+done
+
+# Remove empty consensus files
+for type in RSVA RSVB RSVAD RSVBD; do
+    FILE="irma_consensus/${type}_${BATCH}.fasta"
+    if [ -f "$FILE" ] && [ ! -s "$FILE" ]; then
+        echo "Removing empty file: $FILE"
+        rm "$FILE"
     fi
 done
 
@@ -233,7 +280,6 @@ echo "- RSVB: irma_consensus/RSVB_${BATCH}.fasta"
 echo "- RSVAD: irma_consensus/RSVAD_${BATCH}.fasta"
 echo "- RSVBD: irma_consensus/RSVBD_${BATCH}.fasta"
 echo "========================================"
-
 
 END_TIME=$(date +%s)
 echo "Total pipeline runtime: $((END_TIME - START_TIME)) seconds"
