@@ -50,25 +50,21 @@ step_complete "5" "Files pooled in trees/pooled_consensus/"
 ########################################
 echo "Step 6: MAFFT Alignment of pooled consensus of each type with mafft..."
 
-# RSVA Alignment
-mafft --auto --thread $THREADS \
-      --reorder \
-      trees/pooled_consensus/pooled_RSVA.fasta > trees/mafft_consensus/mafft_RSVA.fasta 2> trees/trees_logs/mafft_rsva.log
-
-# RSVB Alignment
-mafft --auto --thread $THREADS \
-      --reorder \
-      trees/pooled_consensus/pooled_RSVB.fasta > trees/mafft_consensus/mafft_RSVB.fasta 2> trees/trees_logs/mafft_rsvb.log
-
-# RSVAD Alignment
-mafft --auto --thread $THREADS \
-      --reorder \
-      trees/pooled_consensus/pooled_RSVAD.fasta > trees/mafft_consensus/mafft_RSVAD.fasta 2> trees/trees_logs/mafft_rsvad.log
-
-# RSVBD Alignment
-mafft --auto --thread $THREADS \
-      --reorder \
-      trees/pooled_consensus/pooled_RSVBD.fasta > trees/mafft_consensus/mafft_RSVBD.fasta 2> trees/trees_logs/mafft_rsvbd.log
+for type in RSVA RSVB RSVAD RSVBD; do
+    if [ -f "trees/pooled_consensus/pooled_${type}.fasta" ]; then
+        echo "Aligning ${type}..."
+        mafft --auto --thread $THREADS \
+              --reorder \
+              "trees/pooled_consensus/pooled_${type}.fasta" > \
+              "trees/mafft_consensus/mafft_${type}.fasta" 2> \
+              "trees/trees_logs/mafft_${type,,}.log"
+        
+        COUNT=$(grep -c "^>" "trees/mafft_consensus/mafft_${type}.fasta" 2>/dev/null || echo 0)
+        echo "${type} aligned with ${COUNT} sequences"
+    else
+        echo "No ${type} pooled file found - skipping alignment"
+    fi
+done
 
 MAFFT_RSVA_COUNT=$(grep -c "^>" trees/mafft_consensus/mafft_RSVA.fasta)
 MAFFT_RSVB_COUNT=$(grep -c "^>" trees/mafft_consensus/mafft_RSVB.fasta)
@@ -92,33 +88,21 @@ echo "========================================"
 ########################################
 echo "Step 7: Phylogenetic Tree Construction using iqtree..."
 
-# RSVA Tree
-iqtree -s trees/mafft_consensus/mafft_RSVA.fasta \
-       -m MFP -T $THREADS \
-       -bb 1000 -alrt 1000 \
-       -pre trees/RSVA_tree/RSVA_tree \
-       2> trees/trees_logs/iqtree_mafft_rsva.log
-
-# RSVB Tree
-iqtree -s trees/mafft_consensus/mafft_RSVB.fasta \
-       -m MFP -T $THREADS \
-       -bb 1000 -alrt 1000 \
-       -pre trees/RSVB_tree/RSVB_tree \
-       2> trees/trees_logs/iqtree_mafft_rsvb.log
-
-# RSVAD Tree
-iqtree -s trees/mafft_consensus/mafft_RSVAD.fasta \
-       -m MFP -T $THREADS \
-       -bb 1000 -alrt 1000 \
-       -pre trees/RSVAD_tree/RSVAD_tree \
-       2> trees/trees_logs/iqtree_mafft_rsvad.log
-
-# RSVBD Tree
-iqtree -s trees/mafft_consensus/mafft_RSVBD.fasta \
-       -m MFP -T $THREADS \
-       -bb 1000 -alrt 1000 \
-       -pre trees/RSVBD_tree/RSVBD_tree \
-       2> trees/trees_logs/iqtree_mafft_rsvbd.log
+for type in RSVA RSVB RSVAD RSVBD; do
+    if [ -f "trees/mafft_consensus/mafft_${type}.fasta" ]; then
+        echo "Building ${type} tree..."
+        mkdir -p "trees/${type}_tree"
+        iqtree -s "trees/mafft_consensus/mafft_${type}.fasta" \
+               -m MFP -T $THREADS \
+               -bb 1000 -alrt 1000 \
+               -pre "trees/${type}_tree/${type}_tree" \
+               2> "trees/trees_logs/iqtree_${type,,}.log"
+        
+        echo "${type} tree built in trees/${type}_tree/"
+    else
+        echo "No ${type} alignment found - skipping tree construction"
+    fi
+done
 
 step_complete "7" "Tree Success!!"
 
