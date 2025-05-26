@@ -1,3 +1,5 @@
+## rsv_irma_labelled_xargs.sh; v3, parallel using more threads
+
 #!/bin/bash
 source config.sh
 
@@ -39,6 +41,11 @@ if ls *.bam >/dev/null 2>&1; then
         
         if [ -f "$BAM_IN" ]; then
             samtools fastq "$BAM_IN" | gzip > "$FASTQ_OUT" &
+        fi
+        
+        # Limit concurrent jobs to $THREADS (from config.sh)
+        if [[ $(jobs -r -p | wc -l) -ge $THREADS ]]; then
+            wait -n
         fi
     done
     wait  # Ensure all jobs finish
@@ -90,9 +97,9 @@ for i in {1..24}; do
         fi
     ) &
     
-    # Limit concurrent IRMA jobs to $THREADS
-    if (( i % THREADS == 0 )); then
-        wait
+    # Limit concurrent IRMA jobs (RAM/CPU heavy)
+    if [[ $(jobs -r -p | wc -l) -ge $THREADS ]]; then
+        wait -n
     fi
 done
 wait  # Wait for all IRMA jobs
@@ -191,9 +198,8 @@ for i in {1..24}; do
     CONSENSUS_SOURCE="${IRMA_OUTDIR}/amended_consensus/${BARCODE_ID}.fa"
     TYPE_FILE="${IRMA_OUTDIR}/RSV_"*".fasta"
     
-    # Check if consensus file exists and is readable
-    if [ ! -r "$CONSENSUS_SOURCE" ]; then
-        echo "WARNING: Missing or unreadable consensus file for ${BARCODE_ID}" >&2
+    # Check if consensus file exists
+    if [ ! -f "$CONSENSUS_SOURCE" ]; then
         continue
     fi
 
@@ -212,15 +218,14 @@ for i in {1..24}; do
     if [ -z "$RSV_TYPE" ]; then
         continue
     fi
-    
-    # Get sample ID for batch file (macOS compatible)
-    if [[ -v "SAMPLE_IDS[$BARCODE_ID]" ]]; then
-        SAMPLE_ID="${SAMPLE_IDS[$BARCODE_ID]}"
-    else
+
+    # Get sample ID for batch file
+    SAMPLE_ID="${SAMPLE_IDS[$BARCODE_ID]}"
+    if [ -z "$SAMPLE_ID" ]; then
         SAMPLE_ID="${BARCODE_ID}"
     fi
     
-    # Add to batch file with sample ID
+    # Add to batch file with sample ID (Step 4 format)
     sed "s/^>.*/>${SAMPLE_ID}/" "$CONSENSUS_SOURCE" >> "irma_consensus/${RSV_TYPE}_${BATCH}.fasta"
 done
 
@@ -252,3 +257,5 @@ echo "========================================"
 
 END_TIME=$(date +%s)
 echo "Total pipeline runtime: $((END_TIME - START_TIME)) seconds"
+
+
