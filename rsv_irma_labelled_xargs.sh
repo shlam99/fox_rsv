@@ -40,11 +40,6 @@ if ls *.bam >/dev/null 2>&1; then
         if [ -f "$BAM_IN" ]; then
             samtools fastq "$BAM_IN" | gzip > "$FASTQ_OUT" &
         fi
-        
-        # Limit concurrent jobs to $THREADS (from config.sh)
-        if [[ $(jobs -r -p | wc -l) -ge $THREADS ]]; then
-            wait -n
-        fi
     done
     wait  # Ensure all jobs finish
 elif ls *.fastq >/dev/null 2>&1; then
