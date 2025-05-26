@@ -219,9 +219,10 @@ for i in {1..24}; do
         continue
     fi
 
-    # Get sample ID for batch file
-    SAMPLE_ID="${SAMPLE_IDS[$BARCODE_ID]}"
-    if [ -z "$SAMPLE_ID" ]; then
+    # Get sample ID for batch file (macOS compatible)
+    if [[ -v "SAMPLE_IDS[$BARCODE_ID]" ]]; then
+        SAMPLE_ID="${SAMPLE_IDS[$BARCODE_ID]}"
+    else
         SAMPLE_ID="${BARCODE_ID}"
     fi
     
