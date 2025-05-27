@@ -34,9 +34,16 @@ echo "Step 5: Pooling all all consensus sequences by RSV type..."
 # Process each RSV type individually
 for type in RSVA RSVB RSVAD RSVBD; do
     if ls ${type}_* 1> /dev/null 2>&1; then
-        cat ${type}_* > "trees/pooled_consensus/pooled_${type}.fasta" 2>/dev/null
+        # Combine and sort by name
+        {
+            cat ${type}_* 2>/dev/null | \
+            awk '/^>/ {printf("%s%s\t",(N>0?"\n":""),$0);N++;next;} {printf("%s",$0);} END {printf("\n");}' | \
+            sort -k1,1 | \
+            tr '\t' '\n' > "trees/pooled_consensus/pooled_${type}.fasta"
+        } || { echo "Error processing ${type} files"; continue; }
+        
         COUNT=$(grep -c "^>" "trees/pooled_consensus/pooled_${type}.fasta" 2>/dev/null || echo 0)
-        echo "Combined ${type} files (${COUNT} sequences)"
+        echo "Combined and sorted ${type} files (${COUNT} sequences)"
     else
         echo "No ${type} files found - skipping"
         continue
