@@ -1,4 +1,109 @@
-
+#!/bin/bash 
+source config.sh 
+ 
+# Export all variables needed for parallel processing 
+export SAMPLE_PREFIX BATCH THREADS MIN_LENGTH TARGET_BASES KEEP_PERCENT 
+ 
+# Function to display step completion 
+step_complete() { 
+    echo "" 
+    echo "========================================" 
+    echo "Step $1 complete: $2" 
+    echo "========================================" 
+    echo "" 
+} 
+ 
+START_TIME=$(date +%s) 
+ 
+######################################## 
+# Step 0: Setup and dependency checks 
+######################################## 
+echo "Starting pipeline..." 
+echo "Step 0: Setting up directory structure, checking input files, and checking dependencies..." 
+ 
+# Make directories 
+mkdir -p qc_reads/qc_logs irma_results irma_consensus 
+ 
+# Check for required tools 
+command -v samtools >/dev/null 2>&1 || { echo >&2 "Error: samtools not found."; exit 1; } 
+command -v filtlong >/dev/null 2>&1 || { echo >&2 "Error: filtlong not found."; exit 1; } 
+command -v IRMA >/dev/null 2>&1 || { echo >&2 "Error: IRMA not found."; exit 1; } 
+ 
+# Convert BAM to FASTQ (if needed) 
+if ls *.bam >/dev/null 2>&1; then 
+    echo "Found BAM files, converting to FASTQ in parallel..." 
+    for i in {1..24}; do 
+        BARCODE_PADDED=$(printf "%02d" "$i") 
+        BAM_IN="${SAMPLE_PREFIX}_barcode${BARCODE_PADDED}.bam" 
+        FASTQ_OUT="${SAMPLE_PREFIX}_barcode${BARCODE_PADDED}.fastq.gz" 
+         
+        if [ -f "$BAM_IN" ]; then 
+            samtools fastq "$BAM_IN" | gzip > "$FASTQ_OUT" & 
+        fi 
+         
+        # Limit concurrent jobs to $THREADS (from config.sh) 
+        if [[ $(jobs -r -p | wc -l) -ge $THREADS ]]; then 
+            wait -n 
+        fi 
+    done 
+    wait  # Ensure all jobs finish 
+elif ls *.fastq >/dev/null 2>&1; then 
+    echo "Found FASTQ files, compressing in parallel..." 
+    find . -maxdepth 1 -name "*.fastq" -print0 | xargs -0 -P $THREADS -I {} sh -c 'echo "Compressing {}..."; gzip {}' 
+else 
+    echo "Error: No input files found (.bam or .fastq)" 
+fi 
+ 
+step_complete "0" "Setup and dependency checks" 
+ 
+######################################## 
+# Step 1: Quality filtering with filtlong (parallelized) 
+######################################## 
+echo "Step 1: Running filtlong in parallel (xargs)..." 
+seq 1 24 | xargs -P $THREADS -I {} bash -c ' 
+    BARCODE_PADDED=$(printf "%02d" "$1") 
+    FASTQ_IN="${SAMPLE_PREFIX}_barcode${BARCODE_PADDED}.fastq.gz" 
+    FASTQ_FILTERED="qc_reads/${SAMPLE_PREFIX}_barcode${BARCODE_PADDED}.filtered.fastq.gz" 
+     
+    if [ -f "$FASTQ_IN" ]; then 
+        echo "Processing $FASTQ_IN..." 
+        filtlong --min_length $MIN_LENGTH \ 
+                 --keep_percent $KEEP_PERCENT \ 
+                 --target_bases $TARGET_BASES \ 
+                 "$FASTQ_IN" 2> "qc_reads/qc_logs/${SAMPLE_PREFIX}_barcode${BARCODE_PADDED}.filtlong.log" | \ 
+        gzip > "$FASTQ_FILTERED" 
+    else 
+        echo "Warning: $FASTQ_IN not found" >&2 
+    fi 
+' _ {} 
+ 
+step_complete "1" "Quality filtering complete" 
+ 
+######################################## 
+# Step 2: Run IRMA in parallel (background jobs) 
+######################################## 
+echo "Step 2: Running IRMA with $THREADS parallel jobs..." 
+for i in {1..24}; do 
+    ( 
+        BARCODE_PADDED=$(printf "%02d" "$i") 
+        FASTQ_FILTERED="qc_reads/${SAMPLE_PREFIX}_barcode${BARCODE_PADDED}.filtered.fastq.gz" 
+        IRMA_OUTDIR="irma_results/barcode${BARCODE_PADDED}" 
+         
+        if [ -f "$FASTQ_FILTERED" ]; then 
+            echo "Running IRMA on $FASTQ_FILTERED..." 
+            IRMA RSV_ont "$FASTQ_FILTERED" "$IRMA_OUTDIR" 
+        fi 
+    ) & 
+     
+    # Limit concurrent IRMA jobs (RAM/CPU heavy) 
+    if [[ $(jobs -r -p | wc -l) -ge $THREADS ]]; then 
+        wait -n 
+    fi 
+done 
+wait  # Wait for all IRMA jobs 
+ 
+step_complete "2" "IRMA analysis complete" 
+ 
 ######################################## 
 # Step 3: Select and pool consensus sequences 
 ######################################## 
