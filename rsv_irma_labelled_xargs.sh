@@ -219,16 +219,14 @@ for i in {1..24}; do
         continue
     fi
 
-    # Get sample ID for batch file (macOS compatible)
-    if [[ -v "SAMPLE_IDS[$BARCODE_ID]" ]]; then
-        SAMPLE_ID="${SAMPLE_IDS[$BARCODE_ID]}"
-    else
-        SAMPLE_ID="${BARCODE_ID}"
-    fi
-    
-    # Add to batch file with sample ID (Step 4 format)
-    sed "s/^>.*/>${SAMPLE_ID}/" "$CONSENSUS_SOURCE" >> "irma_consensus/${RSV_TYPE}_${BATCH}.fasta"
-done
+# Get sample ID for batch file (macOS-compatible)
+SAMPLE_ID="${SAMPLE_IDS[$BARCODE_ID]-}"  # Default to empty if key missing
+if [[ "$SAMPLE_ID" == "" ]]; then
+    SAMPLE_ID="$BARCODE_ID"
+fi
+
+# Add to batch file with sample ID
+sed "s/^>.*/>${SAMPLE_ID}/" "$CONSENSUS_SOURCE" >> "irma_consensus/${RSV_TYPE}_${BATCH}.fasta"
 
 # Remove empty consensus files
 for type in RSVA RSVB RSVAD RSVBD; do
