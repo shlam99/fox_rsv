@@ -14,7 +14,7 @@ SAMPLE_PREFIX=""
 # Batch Name
 BATCH=""
 
-# Sample ID mapping (case statement)
+# Sample Name
 get_sample_id() {
     local barcode_id="$1"
     case "$barcode_id" in
