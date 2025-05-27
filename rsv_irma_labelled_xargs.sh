@@ -220,10 +220,7 @@ for i in {1..24}; do
     fi
 
     # Get sample ID for batch file 
-    SAMPLE_ID="${SAMPLE_IDS[$BARCODE_ID]}" 
-    if [ -z "$SAMPLE_ID" ]; then 
-        SAMPLE_ID="${BARCODE_ID}" 
-    fi 
+    SAMPLE_ID=$(get_sample_id "$BARCODE_ID")
      
     # Add to batch file with sample ID (Step 4 format) 
     sed "s/^>.*/>${SAMPLE_ID}/" "$CONSENSUS_SOURCE" >> "irma_consensus/${RSV_TYPE}_${BATCH}.fasta" 
