@@ -34,7 +34,7 @@ echo "Step 5: Pooling all all consensus sequences by RSV type..."
 # Process each RSV type individually
 for type in RSVA RSVB RSVAD RSVBD; do
     if ls ${type}_* 1> /dev/null 2>&1; then
-        # Combine and sort by name
+        # Combine, sort, and write in one pipeline without temp files
         {
             cat ${type}_* 2>/dev/null | \
             awk '/^>/ {printf("%s%s\t",(N>0?"\n":""),$0);N++;next;} {printf("%s",$0);} END {printf("\n");}' | \
@@ -50,7 +50,8 @@ for type in RSVA RSVB RSVAD RSVBD; do
     fi
 done
 
-step_complete "5" "Files pooled in trees/pooled_consensus/"
+step_complete "5" "Files pooled and sorted in trees/pooled_consensus/"
+
 
 ########################################
 # Step 6: MAFFT Alignment of pooled consensus of each type with mafft
@@ -61,7 +62,6 @@ for type in RSVA RSVB RSVAD RSVBD; do
     if [ -f "trees/pooled_consensus/pooled_${type}.fasta" ]; then
         echo "Aligning ${type}..."
         mafft --auto --thread $THREADS \
-              --reorder \
               "trees/pooled_consensus/pooled_${type}.fasta" > \
               "trees/mafft_consensus/mafft_${type}.fasta" 2> \
               "trees/trees_logs/mafft_${type,,}.log"
