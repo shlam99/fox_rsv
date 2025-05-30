@@ -1,3 +1,5 @@
+## rsv_irma_labelled_xargs.sh; v3, parallel using more threads
+
 #!/bin/bash
 source config.sh
 
@@ -147,9 +149,11 @@ for i in {1..24}; do
         continue
     fi
 
-    # Add to appropriate consensus file with barcode prefix (Step 3 format)
-    echo "Adding ${BARCODE_ID} to ${RSV_TYPE} consensus..."
-    sed "s/^>/>${SAMPLE_PREFIX}_barcode${BARCODE_PADDED}|/" "$CONSENSUS_SOURCE" >> "irma_consensus/${RSV_TYPE}_consensus.fasta"
+    # Get sample ID for batch file 
+    SAMPLE_ID=$(get_sample_id "$BARCODE_ID")
+
+    # Add to pooled consensus with barcode prefix + sample ID (Step 3 format)
+    sed "s/^>/>${SAMPLE_PREFIX}_barcode${BARCODE_PADDED}|${SAMPLE_ID}|/" "$CONSENSUS_SOURCE" >> "irma_consensus/${RSV_TYPE}_consensus.fasta"
 done
 
 # Remove empty consensus files
@@ -220,7 +224,7 @@ for i in {1..24}; do
     # Get sample ID for batch file 
     SAMPLE_ID=$(get_sample_id "$BARCODE_ID")
      
-    # Add to batch file with sample ID (Step 4 format) 
+    # Add to pooled consensus with sample ID only (Step 4 format) 
     sed "s/^>.*/>${SAMPLE_ID}/" "$CONSENSUS_SOURCE" >> "irma_consensus/${RSV_TYPE}_${BATCH}.fasta" 
 done 
 
@@ -252,5 +256,4 @@ echo "========================================"
 
 END_TIME=$(date +%s)
 echo "Total pipeline runtime: $((END_TIME - START_TIME)) seconds"
-
 
