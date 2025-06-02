@@ -6,14 +6,6 @@ SAMPLE_PREFIX=""
 # Batch Name
 BATCH=""
 
-#!/bin/bash
-
-# Sample Prefix
-SAMPLE_PREFIX=""
-
-# Batch Name
-BATCH=""
-
 # Sample Name
 get_sample_id() {
     local barcode_id="$1"
@@ -40,21 +32,11 @@ get_sample_id() {
         "barcode20") echo "PMT" ;;
         "barcode21") echo "PMT" ;;
         "barcode22") echo "PMT" ;;
+        "barcode23") echo "PMT" ;;
+        "barcode24") echo "PMT" ;;
         *) echo "$barcode_id" ;;  # Fallback to barcode ID if no match
     esac
 }
-
-# Reference Genome
-REFERENCE_GENOME=""
-
-# Filtering Parameters
-THREADS=$(nproc --all)
-MIN_QUALITY=7
-MIN_LENGTH=500
-MAX_LENGTH=50000
-TARGET_BASES=100000000
-KEEP_PERCENT=90
-
 
 # Reference Genome
 REFERENCE_GENOME=""
