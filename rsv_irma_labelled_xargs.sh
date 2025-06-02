@@ -153,7 +153,7 @@ for i in {1..24}; do
     SAMPLE_ID=$(get_sample_id "$BARCODE_ID")
 
     # Add to pooled consensus with barcode prefix + sample ID (Step 3 format)
-    sed "s/^>/>${BATCH}_barcode${BARCODE_PADDED}|${SAMPLE_ID}|/" "$CONSENSUS_SOURCE" >> "irma_consensus/${RSV_TYPE}_consensus.fasta"
+    sed "s/^>/>${BATCH}_barcode${BARCODE_PADDED}|${SAMPLE_ID}|/" "$CONSENSUS_SOURCE" >> "irma_consensus/${RSV_TYPE}_consensus_${BATCH}.fasta"
 done
 
 # Remove empty consensus files
