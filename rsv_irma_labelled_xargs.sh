@@ -1,5 +1,3 @@
-## rsv_irma_labelled_xargs.sh; v3, parallel using more threads
-
 #!/bin/bash
 source config.sh
 
