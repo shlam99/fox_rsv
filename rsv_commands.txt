@@ -1,20 +1,8 @@
 cd /mnt/e/
-
 cd /mnt/c/Users/volca/OneDrive/Academia/HKU_Influenza/RSV_results/
-cd /mnt/c/Users/volca/OneDrive/Academia/HKU_Influenza/RSV_results/20250425_1B1E_2222/20250425_1B
-cd /mnt/c/Users/volca/OneDrive/Academia/HKU_Influenza/RSV_results/20250425_1B1E_2222/20250425_1E
-cd /mnt/c/Users/volca/OneDrive/Academia/HKU_Influenza/RSV_results/20250515_2A2C_2422/20250515_2A
-cd /mnt/c/Users/volca/OneDrive/Academia/HKU_Influenza/RSV_results/20250515_2A2C_2422/20250515_2C
-cd /mnt/c/Users/volca/OneDrive/Academia/HKU_Influenza/RSV_results/20250526_1B1C_2414/20250526_1B
-cd /mnt/c/Users/volca/OneDrive/Academia/HKU_Influenza/RSV_results/20250526_1B1C_2414/20250526_1C
-
 
 bash /mnt/c/Users/volca/OneDrive/Academia/HKU_Influenza/RSV_results/rsv_irma_labelled_xargs.sh
-bash /mnt/c/Users/volca/OneDrive/Academia/HKU_Influenza/RSV_results/rsv_mafft_iqtree.sh
 bash /mnt/c/Users/volca/OneDrive/Academia/HKU_Influenza/RSV_results/label.sh
-
-cd /mnt/c/Users/volca/OneDrive/Academia/HKU_Influenza/RSV_results/test_irma
-
 
 cd /mnt/c/Users/volca/OneDrive/Academia/HKU_Influenza/RSV_results/20250425_1B1E_2222/20250425_1B
 bash /mnt/c/Users/volca/OneDrive/Academia/HKU_Influenza/RSV_results/label.sh
@@ -30,6 +18,6 @@ cd /mnt/c/Users/volca/OneDrive/Academia/HKU_Influenza/RSV_results/20250526_1B1C_
 bash /mnt/c/Users/volca/OneDrive/Academia/HKU_Influenza/RSV_results/label.sh
 
 
-
-
+cd /mnt/c/Users/volca/OneDrive/Academia/HKU_Influenza/RSV_results/test_irma
+bash /mnt/c/Users/volca/OneDrive/Academia/HKU_Influenza/RSV_results/rsv_mafft_iqtree.sh
 
