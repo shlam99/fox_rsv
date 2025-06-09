@@ -16,7 +16,8 @@ Scripts in use: config_empty.sh, rsv_irma_labelled_xargs.sh, rsv_mafft_iqtree.sh
 ------------------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------------------
 source $HOME/miniconda3/bin/activate  
-PS1="[\u@\h \D{%Y%m%d-%H:%M:%S}]\$ "
+
+PS1="[\u@\h \D{%Y%m%d-%H:%M:%S}]\$"
 
 cd /mnt/e/
 cd /mnt/c/Users/volca/OneDrive/Academia/HKU_Influenza/RSV_results/
