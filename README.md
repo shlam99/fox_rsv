@@ -22,6 +22,7 @@ cd /mnt/e/
 cd /mnt/c/Users/volca/OneDrive/Academia/HKU_Influenza/RSV_results/
 
 bash /mnt/c/Users/volca/OneDrive/Academia/HKU_Influenza/RSV_results/rsv_irma_labelled_xargs.sh
+
 bash /mnt/c/Users/volca/OneDrive/Academia/HKU_Influenza/RSV_results/threefour.sh
 
 cd /mnt/c/Users/volca/OneDrive/Academia/HKU_Influenza/RSV_results/20250425_1B1E_2222/20250425_1B
@@ -39,6 +40,7 @@ bash /mnt/c/Users/volca/OneDrive/Academia/HKU_Influenza/RSV_results/threefour.sh
 
 
 cd /mnt/c/Users/volca/OneDrive/Academia/HKU_Influenza/RSV_results/test_irma
+
 bash /mnt/c/Users/volca/OneDrive/Academia/HKU_Influenza/RSV_results/rsv_mafft_iqtree.sh
 
 cd /mnt/e/20250322_2D2H_1009/20250322_2H_bam
