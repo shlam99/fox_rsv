@@ -81,7 +81,7 @@ step_complete "1" "Quality filtering complete"
 
 echo ""
 echo "========================================"
-echo "Output files: qc_reads/SAMPLE_PREFIX_barcodeBARCODE_PADDED.filtered.fastq.gz"
+echo "Output files: qc_reads/${SAMPLE_PREFIX}_barcode01-24.filtered.fastq.gz"
 echo "========================================"
 
 ########################################
@@ -111,7 +111,7 @@ step_complete "2" "IRMA analysis complete"
 
 echo ""
 echo "========================================"
-echo "Output files: irma_results/barcodeBARCODE_PADDED/amended_consensus/barcodeBARCODE_PADDED.fa"
+echo "Output files: irma_results/barcode01-24/amended_consensus/barcode01-24.fa"
 echo "========================================"
 
 ########################################
