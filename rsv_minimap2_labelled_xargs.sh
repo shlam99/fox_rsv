@@ -102,8 +102,8 @@ seq 1 24 | xargs -P $THREADS -I {} bash -c '
                  -Y \
                  "$REFERENCE_GENOME" \
                  "$FASTQ_FILTERED" | \
-        samtools sort -@ $THREADS_PER_JOB -o "${BAM_PREFIX}.aligned.bam"
-        samtools index -@ $THREADS_PER_JOB "${BAM_PREFIX}.aligned.bam"
+        samtools sort -@ $THREADS -o "${BAM_PREFIX}.aligned.bam"
+        samtools index -@ $THREADS "${BAM_PREFIX}.aligned.bam"
         
         # Generate alignment stats
         samtools flagstat "${BAM_PREFIX}.aligned.bam" > "${BAM_PREFIX}.flagstat"
