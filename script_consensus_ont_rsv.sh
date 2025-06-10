@@ -14,20 +14,39 @@ step_complete() {
 # Step 0: Setup and dependency checks
 ########################################
 echo "Starting pipeline..."
-echo "Step 0: Setting up directory structure and checking dependencies..."
+echo "Step 0: Setting up directory structure, checking input files, and checking dependencies..."
 
 # Make directories
-mkdir -p qc_reads/qc_logs aligned_bams consensus_sequences 
+mkdir -p qc_reads/qc_logs irma_results irma_consensus
 
 # Check for required tools
-command -v filtlong >/dev/null 2>&1 || { echo >&2 "Error: filtlong not found."; exit 1; }
-command -v minimap2 >/dev/null 2>&1 || { echo >&2 "Error: minimap2 not found."; exit 1; }
 command -v samtools >/dev/null 2>&1 || { echo >&2 "Error: samtools not found."; exit 1; }
+command -v filtlong >/dev/null 2>&1 || { echo >&2 "Error: filtlong not found."; exit 1; }
+command -v IRMA >/dev/null 2>&1 || { echo >&2 "Error: IRMA not found."; exit 1; }
 
-# Compress FASTQ files if needed
-if ls *.fastq >/dev/null 2>&1; then
-    echo "Compressing FASTQ files..."
-    gzip *.fastq
+# Convert BAM to FASTQ (if needed)
+if ls *.bam >/dev/null 2>&1; then
+    echo "Found BAM files, converting to FASTQ in parallel..."
+    for i in {1..24}; do
+        BARCODE_PADDED=$(printf "%02d" "$i")
+        BAM_IN="${SAMPLE_PREFIX}_barcode${BARCODE_PADDED}.bam"
+        FASTQ_OUT="${SAMPLE_PREFIX}_barcode${BARCODE_PADDED}.fastq.gz"
+        
+        if [ -f "$BAM_IN" ]; then
+            samtools fastq "$BAM_IN" | gzip > "$FASTQ_OUT" &
+        fi
+        
+        # Limit concurrent jobs to $THREADS (from config.sh)
+        if [[ $(jobs -r -p | wc -l) -ge $THREADS ]]; then
+            wait -n
+        fi
+    done
+    wait  # Ensure all jobs finish
+elif ls *.fastq >/dev/null 2>&1; then
+    echo "Found FASTQ files, compressing in parallel..."
+    find . -maxdepth 1 -name "*.fastq" -print0 | xargs -0 -P $THREADS -I {} sh -c 'echo "Compressing {}..."; gzip {}'
+else
+    echo "Error: No input files found (.bam or .fastq)"
 fi
 
 step_complete "0" "Setup and dependency checks"
