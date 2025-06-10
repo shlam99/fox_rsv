@@ -165,7 +165,7 @@ echo "Step 4: Select highest-quality RSVA/RSVB consensus per sample (with barcod
 > "irma_consensus/RSVA_consensus_${BATCH}.fasta"
 > "irma_consensus/RSVB_consensus_${BATCH}.fasta"
 
-for i in {1..22}; do
+for i in {1..24}; do
     BARCODE_PADDED=$(printf "%02d" "$i")
     BARCODE_ID="barcode${BARCODE_PADDED}"
     INPUT_FASTA="consensus_sequences/${SAMPLE_PREFIX}_barcode${BARCODE_PADDED}.fasta"
@@ -226,7 +226,7 @@ echo "Step 5: Creating simplified consensus files with sample ID only..."
 > "irma_consensus/RSVA_${BATCH}.fasta"
 > "irma_consensus/RSVB_${BATCH}.fasta"
 
-for i in {1..22}; do
+for i in {1..24}; do
     BARCODE_PADDED=$(printf "%02d" "$i")
     BARCODE_ID="barcode${BARCODE_PADDED}"
     INPUT_FASTA="consensus_sequences/${SAMPLE_PREFIX}_barcode${BARCODE_PADDED}.fasta"
