@@ -81,13 +81,14 @@ step_complete "1" "Quality filtering complete"
 
 echo ""
 echo "========================================"
-echo "Output files: qc_reads/SAMPLE_PREFIX_barcodeBARCODE_PADDED.filtered.fastq.gz"
+echo "Output files: qc_reads/${SAMPLE_PREFIX}_barcode01-24.filtered.fastq.gz"
 echo "========================================"
 
 ########################################
 # Step 2: Alignment with minimap2
 ########################################
 echo "Step 2: Aligning reads with minimap2 in parallel (xargs)..."
+
 seq 1 24 | xargs -P $THREADS -I {} bash -c '
     BARCODE_PADDED=$(printf "%02d" "$1")
     FASTQ_FILTERED="qc_reads/${SAMPLE_PREFIX}_barcode${BARCODE_PADDED}.filtered.fastq.gz"
@@ -96,7 +97,7 @@ seq 1 24 | xargs -P $THREADS -I {} bash -c '
     if [ -f "$FASTQ_FILTERED" ]; then
         echo "Aligning $FASTQ_FILTERED..."
         minimap2 -ax map-ont \
-                 -t $THREADS_PER_JOB \
+                 -t $THREADS \
                  --MD \
                  -Y \
                  "$REFERENCE_GENOME" \
@@ -116,7 +117,7 @@ step_complete "2" "Alignment complete"
 
 echo ""
 echo "========================================"
-echo "Output files: aligned_bams/SAMPLE_PREFIX_barcodeBARCODE_PADDED.aligned.bam"
+echo "Output files: aligned_bams/${SAMPLE_PREFIX}_barcode01-24.aligned.bam"
 echo "========================================"
 
 ########################################
@@ -152,7 +153,7 @@ step_complete "3" "Consensus generation complete"
 
 echo ""
 echo "========================================"
-echo "Output files: consensus_sequences/SAMPLE_PREFIX_barcodeBARCODE_PADDED.fasta"
+echo "Output files: consensus_sequences/${SAMPLE_PREFIX}_barcode01-24.fasta"
 echo "========================================"
 
 ########################################
