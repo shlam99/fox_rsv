@@ -21,13 +21,12 @@ START_TIME=$(date +%s)
 echo "Starting pipeline..."
 echo "Step 0: Setting up directory structure, checking input files, and checking dependencies..."
 
-# Make directories
-mkdir -p qc_reads/qc_logs aligned_bams consensus_sequences
+# Make directories (including pooled_consensus)
+mkdir -p qc_reads/qc_logs aligned_bams consensus_sequences pooled_consensus
 
 # Check for required tools
 command -v samtools >/dev/null 2>&1 || { echo >&2 "Error: samtools not found."; exit 1; }
 command -v filtlong >/dev/null 2>&1 || { echo >&2 "Error: filtlong not found."; exit 1; }
-command -v IRMA >/dev/null 2>&1 || { echo >&2 "Error: IRMA not found."; exit 1; }
 
 # Convert BAM to FASTQ (if needed)
 if ls *.bam >/dev/null 2>&1; then
@@ -41,12 +40,12 @@ if ls *.bam >/dev/null 2>&1; then
             samtools fastq "$BAM_IN" | gzip > "$FASTQ_OUT" &
         fi
         
-        # Limit concurrent jobs to $THREADS (from config.sh)
+        # Limit concurrent jobs to $THREADS
         if [[ $(jobs -r -p | wc -l) -ge $THREADS ]]; then
             wait -n
         fi
     done
-    wait  # Ensure all jobs finish
+    wait
 elif ls *.fastq >/dev/null 2>&1; then
     echo "Found FASTQ files, compressing in parallel..."
     find . -maxdepth 1 -name "*.fastq" -print0 | xargs -0 -P $THREADS -I {} sh -c 'echo "Compressing {}..."; gzip {}'
@@ -97,13 +96,13 @@ seq 1 24 | xargs -P $THREADS -I {} bash -c '
     if [ -f "$FASTQ_FILTERED" ]; then
         echo "Aligning $FASTQ_FILTERED..."
         minimap2 -ax map-ont \
-                 -t $THREADS \
+                 -t 1 \
                  --MD \
                  -Y \
                  "$REFERENCE_GENOME" \
                  "$FASTQ_FILTERED" | \
-        samtools sort -@ $THREADS -o "${BAM_PREFIX}.aligned.bam"
-        samtools index -@ $THREADS "${BAM_PREFIX}.aligned.bam"
+        samtools sort -@ 1 -o "${BAM_PREFIX}.aligned.bam"
+        samtools index -@ 1 "${BAM_PREFIX}.aligned.bam"
         
         # Generate alignment stats
         samtools flagstat "${BAM_PREFIX}.aligned.bam" > "${BAM_PREFIX}.flagstat"
@@ -162,8 +161,8 @@ echo "========================================"
 echo "Step 4: Select highest-quality RSVA/RSVB consensus per sample (with barcode+sample ID)..."
 
 # Initialize output files
-> "irma_consensus/RSVA_consensus_${BATCH}.fasta"
-> "irma_consensus/RSVB_consensus_${BATCH}.fasta"
+> "pooled_consensus/RSVA_consensus_${BATCH}.fasta"
+> "pooled_consensus/RSVB_consensus_${BATCH}.fasta"
 
 for i in {1..24}; do
     BARCODE_PADDED=$(printf "%02d" "$i")
@@ -190,7 +189,7 @@ for i in {1..24}; do
                     print line
                 }
             }
-        ' "$INPUT_FASTA" >> "irma_consensus/RSVA_consensus_${BATCH}.fasta"
+        ' "$INPUT_FASTA" >> "pooled_consensus/RSVA_consensus_${BATCH}.fasta"
     else
         # Use RSVB version with barcode and sample ID
         awk -v batch="$BATCH" -v bar="$BARCODE_PADDED" -v sample="$SAMPLE_ID" '
@@ -201,20 +200,20 @@ for i in {1..24}; do
                     print line
                 }
             }
-        ' "$INPUT_FASTA" >> "irma_consensus/RSVB_consensus_${BATCH}.fasta"
+        ' "$INPUT_FASTA" >> "pooled_consensus/RSVB_consensus_${BATCH}.fasta"
     fi
 done
 
-RSVA_COUNT=$(grep -c "^>RSVA" "irma_consensus/RSVA_consensus_${BATCH}.fasta")
-RSVB_COUNT=$(grep -c "^>RSVB" "irma_consensus/RSVB_consensus_${BATCH}.fasta")
+RSVA_COUNT=$(grep -c "^>RSVA" "pooled_consensus/RSVA_consensus_${BATCH}.fasta")
+RSVB_COUNT=$(grep -c "^>RSVB" "pooled_consensus/RSVB_consensus_${BATCH}.fasta")
 
 step_complete "4" "Success!!: Selected RSVA ($RSVA_COUNT samples) and RSVB ($RSVB_COUNT samples) with barcode+sample ID"
 
 echo ""
 echo "========================================"
 echo "Step 4 output files:"
-echo "- RSVA: irma_consensus/RSVA_consensus_${BATCH}.fasta"
-echo "- RSVB: irma_consensus/RSVB_consensus_${BATCH}.fasta"
+echo "- RSVA: pooled_consensus/RSVA_consensus_${BATCH}.fasta"
+echo "- RSVB: pooled_consensus/RSVB_consensus_${BATCH}.fasta"
 echo "========================================"
 
 ########################################
@@ -223,8 +222,8 @@ echo "========================================"
 echo "Step 5: Creating simplified consensus files with sample ID only..."
 
 # Initialize output files
-> "irma_consensus/RSVA_${BATCH}.fasta"
-> "irma_consensus/RSVB_${BATCH}.fasta"
+> "pooled_consensus/RSVA_${BATCH}.fasta"
+> "pooled_consensus/RSVB_${BATCH}.fasta"
 
 for i in {1..24}; do
     BARCODE_PADDED=$(printf "%02d" "$i")
@@ -251,7 +250,7 @@ for i in {1..24}; do
                     print line
                 }
             }
-        ' "$INPUT_FASTA" >> "irma_consensus/RSVA_${BATCH}.fasta"
+        ' "$INPUT_FASTA" >> "pooled_consensus/RSVA_${BATCH}.fasta"
     else
         # Use RSVB version with sample ID only
         awk -v sample="$SAMPLE_ID" '
@@ -262,20 +261,20 @@ for i in {1..24}; do
                     print line
                 }
             }
-        ' "$INPUT_FASTA" >> "irma_consensus/RSVB_${BATCH}.fasta"
+        ' "$INPUT_FASTA" >> "pooled_consensus/RSVB_${BATCH}.fasta"
     fi
 done
 
-RSVA_COUNT=$(grep -c "^>" "irma_consensus/RSVA_${BATCH}.fasta")
-RSVB_COUNT=$(grep -c "^>" "irma_consensus/RSVB_${BATCH}.fasta")
+RSVA_COUNT=$(grep -c "^>" "pooled_consensus/RSVA_${BATCH}.fasta")
+RSVB_COUNT=$(grep -c "^>" "pooled_consensus/RSVB_${BATCH}.fasta")
 
 step_complete "5" "Success!!: Created simplified RSVA ($RSVA_COUNT samples) and RSVB ($RSVB_COUNT samples) with sample ID only"
 
 echo ""
 echo "========================================"
 echo "Step 5 output files:"
-echo "- RSVA: irma_consensus/RSVA_${BATCH}.fasta"
-echo "- RSVB: irma_consensus/RSVB_${BATCH}.fasta"
+echo "- RSVA: pooled_consensus/RSVA_${BATCH}.fasta"
+echo "- RSVB: pooled_consensus/RSVB_${BATCH}.fasta"
 echo "========================================"
 
 END_TIME=$(date +%s)
