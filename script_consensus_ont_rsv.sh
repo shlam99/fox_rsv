@@ -1,6 +1,9 @@
 #!/bin/bash
 source config.sh
 
+# Export all variables needed for parallel processing
+export SAMPLE_PREFIX BATCH THREADS MIN_LENGTH TARGET_BASES KEEP_PERCENT
+
 # Function to display step completion
 step_complete() {
     echo ""
@@ -9,6 +12,8 @@ step_complete() {
     echo "========================================"
     echo ""
 }
+
+START_TIME=$(date +%s)
 
 ########################################
 # Step 0: Setup and dependency checks
@@ -198,5 +203,6 @@ echo "- RSVA consensus: consensus_sequences/RSVA_consensus.fasta"
 echo "- RSVB consensus: consensus_sequences/RSVB_consensus.fasta"
 echo "========================================"
 
-
+END_TIME=$(date +%s)
+echo "Total pipeline runtime: $((END_TIME - START_TIME)) seconds"
 
