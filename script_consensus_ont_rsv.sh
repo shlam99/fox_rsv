@@ -78,7 +78,7 @@ step_complete "1" "Success!!"
 
 echo ""
 echo "========================================"
-echo "Output files: qc_reads/${SAMPLE_PREFIX}_barcode${BARCODE_PADDED}.filtered.fastq.gz"
+echo "Output files: qc_reads/{SAMPLE_PREFIX}_barcode{BARCODE_PADDED}.filtered.fastq.gz"
 echo "========================================"
 
 
