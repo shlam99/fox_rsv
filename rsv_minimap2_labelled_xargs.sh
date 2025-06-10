@@ -157,18 +157,23 @@ echo "Output files: consensus_sequences/${SAMPLE_PREFIX}_barcode01-24.fasta"
 echo "========================================"
 
 ########################################
-# Step 4: Select RSVA OR RSVB consensus per sample
+# Step 4: Select RSVA OR RSVB consensus per sample (with barcode+sample ID)
 ########################################
-echo "Step 4: Select highest-quality RSVA/RSVB consensus per sample..."
+echo "Step 4: Select highest-quality RSVA/RSVB consensus per sample (with barcode+sample ID)..."
 
-> consensus_sequences/RSVA_consensus.fasta
-> consensus_sequences/RSVB_consensus.fasta
+# Initialize output files
+> "irma_consensus/RSVA_consensus_${BATCH}.fasta"
+> "irma_consensus/RSVB_consensus_${BATCH}.fasta"
 
 for i in {1..22}; do
     BARCODE_PADDED=$(printf "%02d" "$i")
+    BARCODE_ID="barcode${BARCODE_PADDED}"
     INPUT_FASTA="consensus_sequences/${SAMPLE_PREFIX}_barcode${BARCODE_PADDED}.fasta"
     
     echo "Processing ${INPUT_FASTA}..."
+    
+    # Get sample ID
+    SAMPLE_ID=$(get_sample_id "$BARCODE_ID")
     
     # Count non-N bases for each virus in the sample
     RSVA_COUNT=$(awk '/^>RSVA/{getline; seq=""; while ((getline line)>0) {if(line~/^>/){break}; seq=seq line}; gsub(/[^ACGT]/, "", seq); print length(seq)}' "$INPUT_FASTA")
@@ -176,40 +181,101 @@ for i in {1..22}; do
     
     # Select the version with more ACGT bases (fewer Ns)
     if [ "$RSVA_COUNT" -ge "$RSVB_COUNT" ]; then
-        # Use RSVA version (multi-line aware)
-        awk -v bar="barcode${BARCODE_PADDED}" '
+        # Use RSVA version with barcode and sample ID
+        awk -v batch="$BATCH" -v bar="$BARCODE_PADDED" -v sample="$SAMPLE_ID" '
             /^>RSVA/ { 
-                print $0 "|" bar
+                print $0 "|" batch "_barcode" bar "|" sample
                 while ((getline line) > 0) {
                     if (line ~ /^>/) exit
                     print line
                 }
             }
-        ' "$INPUT_FASTA" >> consensus_sequences/RSVA_consensus.fasta
+        ' "$INPUT_FASTA" >> "irma_consensus/RSVA_consensus_${BATCH}.fasta"
     else
-        # Use RSVB version (multi-line aware)
-        awk -v bar="barcode${BARCODE_PADDED}" '
+        # Use RSVB version with barcode and sample ID
+        awk -v batch="$BATCH" -v bar="$BARCODE_PADDED" -v sample="$SAMPLE_ID" '
             /^>RSVB/ { 
-                print $0 "|" bar
+                print $0 "|" batch "_barcode" bar "|" sample
                 while ((getline line) > 0) {
                     if (line ~ /^>/) exit
                     print line
                 }
             }
-        ' "$INPUT_FASTA" >> consensus_sequences/RSVB_consensus.fasta
+        ' "$INPUT_FASTA" >> "irma_consensus/RSVB_consensus_${BATCH}.fasta"
     fi
 done
 
-RSVA_COUNT=$(grep -c "^>RSVA" consensus_sequences/RSVA_consensus.fasta)
-RSVB_COUNT=$(grep -c "^>RSVB" consensus_sequences/RSVB_consensus.fasta)
+RSVA_COUNT=$(grep -c "^>RSVA" "irma_consensus/RSVA_consensus_${BATCH}.fasta")
+RSVB_COUNT=$(grep -c "^>RSVB" "irma_consensus/RSVB_consensus_${BATCH}.fasta")
 
-step_complete "4" "Success!!: Selected RSVA ($RSVA_COUNT samples) and RSVB ($RSVB_COUNT samples)"
+step_complete "4" "Success!!: Selected RSVA ($RSVA_COUNT samples) and RSVB ($RSVB_COUNT samples) with barcode+sample ID"
 
 echo ""
 echo "========================================"
-echo "Output files:"
-echo "- RSVA consensus: consensus_sequences/RSVA_consensus.fasta"
-echo "- RSVB consensus: consensus_sequences/RSVB_consensus.fasta"
+echo "Step 4 output files:"
+echo "- RSVA: irma_consensus/RSVA_consensus_${BATCH}.fasta"
+echo "- RSVB: irma_consensus/RSVB_consensus_${BATCH}.fasta"
+echo "========================================"
+
+########################################
+# Step 5: Create simplified consensus with sample ID only
+########################################
+echo "Step 5: Creating simplified consensus files with sample ID only..."
+
+# Initialize output files
+> "irma_consensus/RSVA_${BATCH}.fasta"
+> "irma_consensus/RSVB_${BATCH}.fasta"
+
+for i in {1..22}; do
+    BARCODE_PADDED=$(printf "%02d" "$i")
+    BARCODE_ID="barcode${BARCODE_PADDED}"
+    INPUT_FASTA="consensus_sequences/${SAMPLE_PREFIX}_barcode${BARCODE_PADDED}.fasta"
+    
+    echo "Processing ${INPUT_FASTA} for simplified consensus..."
+    
+    # Get sample ID
+    SAMPLE_ID=$(get_sample_id "$BARCODE_ID")
+    
+    # Count non-N bases for each virus in the sample
+    RSVA_COUNT=$(awk '/^>RSVA/{getline; seq=""; while ((getline line)>0) {if(line~/^>/){break}; seq=seq line}; gsub(/[^ACGT]/, "", seq); print length(seq)}' "$INPUT_FASTA")
+    RSVB_COUNT=$(awk '/^>RSVB/{getline; seq=""; while ((getline line)>0) {if(line~/^>/){break}; seq=seq line}; gsub(/[^ACGT]/, "", seq); print length(seq)}' "$INPUT_FASTA")
+    
+    # Select the version with more ACGT bases (fewer Ns)
+    if [ "$RSVA_COUNT" -ge "$RSVB_COUNT" ]; then
+        # Use RSVA version with sample ID only
+        awk -v sample="$SAMPLE_ID" '
+            /^>RSVA/ { 
+                print ">" sample
+                while ((getline line) > 0) {
+                    if (line ~ /^>/) exit
+                    print line
+                }
+            }
+        ' "$INPUT_FASTA" >> "irma_consensus/RSVA_${BATCH}.fasta"
+    else
+        # Use RSVB version with sample ID only
+        awk -v sample="$SAMPLE_ID" '
+            /^>RSVB/ { 
+                print ">" sample
+                while ((getline line) > 0) {
+                    if (line ~ /^>/) exit
+                    print line
+                }
+            }
+        ' "$INPUT_FASTA" >> "irma_consensus/RSVB_${BATCH}.fasta"
+    fi
+done
+
+RSVA_COUNT=$(grep -c "^>" "irma_consensus/RSVA_${BATCH}.fasta")
+RSVB_COUNT=$(grep -c "^>" "irma_consensus/RSVB_${BATCH}.fasta")
+
+step_complete "5" "Success!!: Created simplified RSVA ($RSVA_COUNT samples) and RSVB ($RSVB_COUNT samples) with sample ID only"
+
+echo ""
+echo "========================================"
+echo "Step 5 output files:"
+echo "- RSVA: irma_consensus/RSVA_${BATCH}.fasta"
+echo "- RSVB: irma_consensus/RSVB_${BATCH}.fasta"
 echo "========================================"
 
 END_TIME=$(date +%s)
