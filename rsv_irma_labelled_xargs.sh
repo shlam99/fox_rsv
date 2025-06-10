@@ -79,6 +79,11 @@ seq 1 24 | xargs -P $THREADS -I {} bash -c '
 
 step_complete "1" "Quality filtering complete"
 
+echo ""
+echo "========================================"
+echo "Output files: qc_reads/{SAMPLE_PREFIX}_barcode{BARCODE_PADDED}.filtered.fastq.gz"
+echo "========================================"
+
 ########################################
 # Step 2: Run IRMA in parallel (background jobs)
 ########################################
