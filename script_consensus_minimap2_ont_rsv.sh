@@ -76,7 +76,6 @@ for i in {1..22}; do
              "$REFERENCE_GENOME" \
              "$FASTQ_FILTERED" | \
     samtools sort -@ $THREADS -o "${BAM_PREFIX}.aligned.bam"
-    
     samtools index -@ $THREADS "${BAM_PREFIX}.aligned.bam"
     
     # Generate alignment stats
