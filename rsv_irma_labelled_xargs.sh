@@ -81,7 +81,7 @@ step_complete "1" "Quality filtering complete"
 
 echo ""
 echo "========================================"
-echo "Output files: qc_reads/{SAMPLE_PREFIX}_barcode{BARCODE_PADDED}.filtered.fastq.gz"
+echo "Output files: qc_reads/SAMPLE_PREFIX_barcodeBARCODE_PADDED.filtered.fastq.gz"
 echo "========================================"
 
 ########################################
@@ -108,6 +108,11 @@ done
 wait  # Wait for all IRMA jobs
 
 step_complete "2" "IRMA analysis complete"
+
+echo ""
+echo "========================================"
+echo "Output files: irma_results/barcodeBARCODE_PADDED/amended_consensus/barcodeBARCODE_PADDED.fa"
+echo "========================================"
 
 ########################################
 # Step 3: Select and pool consensus sequences
@@ -179,10 +184,10 @@ step_complete "3" "Success!!: Pooled RSVs (A:$RSVA_COUNT B:$RSVB_COUNT AD:$RSVAD
 echo ""
 echo "========================================"
 echo "Step 3 output files:"
-echo "- RSVA: irma_consensus/RSVA_consensus.fasta"
-echo "- RSVB: irma_consensus/RSVB_consensus.fasta"
-echo "- RSVAD: irma_consensus/RSVAD_consensus.fasta"
-echo "- RSVBD: irma_consensus/RSVBD_consensus.fasta"
+echo "- RSVA: irma_consensus/RSVA_consensus_${BATCH}.fasta"
+echo "- RSVB: irma_consensus/RSVB_consensus_${BATCH}.fasta"
+echo "- RSVAD: irma_consensus/RSVAD_consensus_${BATCH}.fasta"
+echo "- RSVBD: irma_consensus/RSVBD_consensus_${BATCH}.fasta"
 echo "========================================"
 
 ########################################
