@@ -22,7 +22,7 @@ echo "Starting pipeline..."
 echo "Step 0: Setting up directory structure, checking input files, and checking dependencies..."
 
 # Make directories
-mkdir -p qc_reads/qc_logs irma_results irma_consensus
+mkdir -p qc_reads/qc_logs aligned_bams consensus_sequences
 
 # Check for required tools
 command -v samtools >/dev/null 2>&1 || { echo >&2 "Error: samtools not found."; exit 1; }
