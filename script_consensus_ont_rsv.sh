@@ -59,22 +59,25 @@ step_complete "0" "Setup and dependency checks"
 ########################################
 # Step 1: Quality filtering with filtlong
 ########################################
-echo "Step 1: Performing quality filtering with filtlong..."
-
-for i in {1..22}; do
-    BARCODE_PADDED=$(printf "%02d" "$i")
+echo "Step 1: Running filtlong in parallel (xargs)..."
+seq 1 24 | xargs -P $THREADS -I {} bash -c '
+    BARCODE_PADDED=$(printf "%02d" "$1")
     FASTQ_IN="${SAMPLE_PREFIX}_barcode${BARCODE_PADDED}.fastq.gz"
     FASTQ_FILTERED="qc_reads/${SAMPLE_PREFIX}_barcode${BARCODE_PADDED}.filtered.fastq.gz"
     
-    echo "Processing ${FASTQ_IN}..."
-    filtlong --min_length $MIN_LENGTH \
-             --keep_percent $KEEP_PERCENT \
-             --target_bases $TARGET_BASES \
-             "$FASTQ_IN" 2> "qc_reads/qc_logs/${SAMPLE_PREFIX}_barcode${BARCODE_PADDED}.filtlong.log" | \
-    gzip > "$FASTQ_FILTERED"
-done
+    if [ -f "$FASTQ_IN" ]; then
+        echo "Processing $FASTQ_IN..."
+        filtlong --min_length $MIN_LENGTH \
+                 --keep_percent $KEEP_PERCENT \
+                 --target_bases $TARGET_BASES \
+                 "$FASTQ_IN" 2> "qc_reads/qc_logs/${SAMPLE_PREFIX}_barcode${BARCODE_PADDED}.filtlong.log" | \
+        gzip > "$FASTQ_FILTERED"
+    else
+        echo "Warning: $FASTQ_IN not found" >&2
+    fi
+' _ {}
 
-step_complete "1" "Success!!"
+step_complete "1" "Quality filtering complete"
 
 echo ""
 echo "========================================"
