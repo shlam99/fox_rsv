@@ -87,67 +87,72 @@ echo "========================================"
 ########################################
 # Step 2: Alignment with minimap2
 ########################################
-echo "Step 2: Aligning reads with minimap2..."
-
-for i in {1..22}; do
-    BARCODE_PADDED=$(printf "%02d" "$i")
+echo "Step 2: Aligning reads with minimap2 in parallel (xargs)..."
+seq 1 24 | xargs -P $THREADS -I {} bash -c '
+    BARCODE_PADDED=$(printf "%02d" "$1")
     FASTQ_FILTERED="qc_reads/${SAMPLE_PREFIX}_barcode${BARCODE_PADDED}.filtered.fastq.gz"
     BAM_PREFIX="aligned_bams/${SAMPLE_PREFIX}_barcode${BARCODE_PADDED}"
     
-    echo "Aligning ${FASTQ_FILTERED}..."
-    minimap2 -ax map-ont \
-             -t $THREADS \
-             --MD \
-             -Y \
-             "$REFERENCE_GENOME" \
-             "$FASTQ_FILTERED" | \
-    samtools sort -@ $THREADS -o "${BAM_PREFIX}.aligned.bam"
-    
-    samtools index -@ $THREADS "${BAM_PREFIX}.aligned.bam"
-    
-    # Generate alignment stats
-    samtools flagstat "${BAM_PREFIX}.aligned.bam" > "${BAM_PREFIX}.flagstat"
-    samtools stats "${BAM_PREFIX}.aligned.bam" > "${BAM_PREFIX}.stats"
-done
+    if [ -f "$FASTQ_FILTERED" ]; then
+        echo "Aligning $FASTQ_FILTERED..."
+        minimap2 -ax map-ont \
+                 -t $THREADS_PER_JOB \
+                 --MD \
+                 -Y \
+                 "$REFERENCE_GENOME" \
+                 "$FASTQ_FILTERED" | \
+        samtools sort -@ $THREADS_PER_JOB -o "${BAM_PREFIX}.aligned.bam"
+        samtools index -@ $THREADS_PER_JOB "${BAM_PREFIX}.aligned.bam"
+        
+        # Generate alignment stats
+        samtools flagstat "${BAM_PREFIX}.aligned.bam" > "${BAM_PREFIX}.flagstat"
+        samtools stats "${BAM_PREFIX}.aligned.bam" > "${BAM_PREFIX}.stats"
+    else
+        echo "Warning: $FASTQ_FILTERED not found" >&2
+    fi
+' _ {}
 
-step_complete "2" "Success!!"
+step_complete "2" "Alignment complete"
 
 echo ""
 echo "========================================"
-echo "Output files: aligned_bams/${SAMPLE_PREFIX}_barcode${BARCODE_PADDED}.aligned.bam"
+echo "Output files: aligned_bams/SAMPLE_PREFIX_barcodeBARCODE_PADDED.aligned.bam"
 echo "========================================"
 
 ########################################
 # Step 3: Consensus generation with samtools
 ########################################
-echo "Step 3: Generating consensus sequences..."
-
-for i in {1..22}; do
-    BARCODE_PADDED=$(printf "%02d" "$i")
+echo "Step 3: Generating consensus sequences in parallel (xargs)..."
+seq 1 24 | xargs -P $THREADS -I {} bash -c '
+    BARCODE_PADDED=$(printf "%02d" "$1")
     BAM="aligned_bams/${SAMPLE_PREFIX}_barcode${BARCODE_PADDED}.aligned.bam"
     CONSENSUS="consensus_sequences/${SAMPLE_PREFIX}_barcode${BARCODE_PADDED}.fasta"
     
-    echo "Processing ${BAM}..."
-    
-    # Verify BAM is aligned to this reference
-    if ! samtools view -H "$BAM" | grep -q "$(head -n1 "$REFERENCE_GENOME" | tr -d '>')"; then
-        echo "ERROR: BAM not aligned to specified reference" >&2
-        exit 1
+    if [ -f "$BAM" ]; then
+        echo "Processing $BAM..."
+        
+        # Verify BAM is aligned to this reference
+        if ! samtools view -H "$BAM" | grep -q "$(head -n1 "$REFERENCE_GENOME" | tr -d ">")"; then
+            echo "ERROR: BAM not aligned to specified reference" >&2
+            exit 1
+        fi
+        
+        samtools consensus -a --show-ins no "$BAM" -o "$CONSENSUS"
+        
+        if [ ! -s "$CONSENSUS" ]; then
+            echo "ERROR: Empty consensus for barcode ${BARCODE_PADDED}" >&2
+            exit 1
+        fi
+    else
+        echo "Warning: $BAM not found" >&2
     fi
-    
-    samtools consensus -a --show-ins no "$BAM" -o "$CONSENSUS"
-    
-    if [ ! -s "$CONSENSUS" ]; then
-        echo "ERROR: Empty consensus for barcode ${BARCODE_PADDED}" >&2
-        exit 1
-    fi
-done
+' _ {}
 
-step_complete "3" "Success!!"
+step_complete "3" "Consensus generation complete"
 
 echo ""
 echo "========================================"
-echo "Output files: consensus_sequences/${SAMPLE_PREFIX}_barcode${BARCODE_PADDED}.fasta"
+echo "Output files: consensus_sequences/SAMPLE_PREFIX_barcodeBARCODE_PADDED.fasta"
 echo "========================================"
 
 ########################################
