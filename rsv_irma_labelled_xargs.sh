@@ -21,9 +21,6 @@ START_TIME=$(date +%s)
 echo "Starting pipeline..."
 echo "Step 0: Setting up directory structure, checking input files, and checking dependencies..."
 
-# Make directories
-mkdir -p qc_reads/qc_logs irma_results irma_consensus
-
 # Check for required tools
 command -v samtools >/dev/null 2>&1 || { echo >&2 "Error: samtools not found."; exit 1; }
 command -v filtlong >/dev/null 2>&1 || { echo >&2 "Error: filtlong not found."; exit 1; }
@@ -60,6 +57,10 @@ step_complete "0" "Setup and dependency checks"
 # Step 1: Quality filtering with filtlong (parallelized)
 ########################################
 echo "Step 1: Running filtlong in parallel (xargs)..."
+
+# Make directory
+mkdir -p qc_reads/qc_logs
+
 seq 1 24 | xargs -P $THREADS -I {} bash -c '
     BARCODE_PADDED=$(printf "%02d" "$1")
     FASTQ_IN="${SAMPLE_PREFIX}_barcode${BARCODE_PADDED}.fastq.gz"
@@ -88,6 +89,10 @@ echo "========================================"
 # Step 2: Run IRMA in parallel (background jobs)
 ########################################
 echo "Step 2: Running IRMA with $THREADS parallel jobs..."
+
+# Make directory
+mkdir -p irma_results
+
 for i in {1..24}; do
     (
         BARCODE_PADDED=$(printf "%02d" "$i")
@@ -118,6 +123,9 @@ echo "========================================"
 # Step 3: Select and pool consensus sequences
 ########################################
 echo "Step 3: Selecting and pooling consensus sequences by RSV type..."
+
+# Make directory
+mkdir -p irma_consensus
 
 # Initialize output files
 > irma_consensus/RSVA_consensus.fasta
