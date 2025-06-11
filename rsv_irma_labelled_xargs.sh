@@ -203,6 +203,9 @@ echo "========================================"
 ########################################
 echo "Step 4: Creating batch-labeled consensus files (${BATCH})..."
 
+# Make directory
+mkdir -p irma_consensus
+
 # Initialize batch files
 > irma_consensus/RSVA_${BATCH}.fasta
 > irma_consensus/RSVB_${BATCH}.fasta
