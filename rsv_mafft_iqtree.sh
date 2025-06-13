@@ -17,9 +17,6 @@ START_TIME=$(date +%s)
 ########################################
 echo "Step 0: Setup and dependency checks..."
 
-# Make directories
-mkdir -p trees/{pooled_consensus,mafft_consensus,trees_logs,RSVA_tree,RSVB_tree,RSVAD_tree,RSVBD_tree}
-
 # Check required tools
 command -v mafft >/dev/null 2>&1 || { echo >&2 "Error: MAFFT not found"; exit 1; }
 command -v iqtree >/dev/null 2>&1 || { echo >&2 "Error: IQ-TREE not found"; exit 1; }
@@ -30,6 +27,9 @@ step_complete "0" "Directory structure created and dependencies verified"
 # Step 5: Pooling all consensus sequences by RSV type
 ########################################
 echo "Step 5: Pooling all all consensus sequences by RSV type..."
+
+# Make directories
+mkdir -p trees/pooled_consensus
 
 # Process each RSV type individually
 for type in RSVA RSVB RSVAD RSVBD; do
@@ -57,6 +57,9 @@ step_complete "5" "Files pooled and sorted in trees/pooled_consensus/"
 # Step 6: MAFFT Alignment of pooled consensus of each type with mafft
 ########################################
 echo "Step 6: MAFFT Alignment of pooled consensus of each type with mafft..."
+
+# Make directories
+mkdir -p trees/mafft_consensus
 
 for type in RSVA RSVB RSVAD RSVBD; do
     if [ -f "trees/pooled_consensus/pooled_${type}.fasta" ]; then
@@ -94,6 +97,9 @@ echo "========================================"
 # Step 7: Phylogenetic Tree Construction using iqtree
 ########################################
 echo "Step 7: Phylogenetic Tree Construction using iqtree..."
+
+# Make directories
+mkdir -p trees/{trees_logs,RSVA_tree,RSVB_tree,RSVAD_tree,RSVBD_tree}
 
 for type in RSVA RSVB RSVAD RSVBD; do
     if [ -f "trees/mafft_consensus/mafft_${type}.fasta" ]; then
