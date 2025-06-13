@@ -59,7 +59,7 @@ step_complete "5" "Files pooled and sorted in trees/pooled_consensus/"
 echo "Step 6: MAFFT Alignment of pooled consensus of each type with mafft..."
 
 # Make directories
-mkdir -p trees/mafft_consensus
+mkdir -p trees/{mafft_consensus,trees_logs}
 
 for type in RSVA RSVB RSVAD RSVBD; do
     if [ -f "trees/pooled_consensus/pooled_${type}.fasta" ]; then
@@ -99,7 +99,7 @@ echo "========================================"
 echo "Step 7: Phylogenetic Tree Construction using iqtree..."
 
 # Make directories
-mkdir -p trees/{trees_logs,RSVA_tree,RSVB_tree,RSVAD_tree,RSVBD_tree}
+mkdir -p trees/{RSVA_tree,RSVB_tree,RSVAD_tree,RSVBD_tree,trees_logs}
 
 for type in RSVA RSVB RSVAD RSVBD; do
     if [ -f "trees/mafft_consensus/mafft_${type}.fasta" ]; then
