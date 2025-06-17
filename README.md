@@ -15,9 +15,14 @@ Scripts in use: config_empty.sh, rsv_irma_labelled_xargs.sh, rsv_mafft_iqtree.sh
 
 ------------------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------------------
-source $HOME/miniconda3/bin/activate  
+# Activate miniconda3 (for some terminal)
+source ~/miniconda3/bin/activate  
 
+# Add timestamp to WSL
 PS1="[\u@\h \D{%Y%m%d-%H:%M:%S}]\$"
+
+# Use all cores (inconsistent!)
+THREADS=$(nproc --all)
 
 cd /mnt/e/
 cd /mnt/c/Users/volca/OneDrive/Academia/HKU_Influenza/RSV_results/
