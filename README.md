@@ -26,13 +26,7 @@ THREADS=$(nproc --all)
 
 cd /mnt/e/
 cd /mnt/c/Users/volca/OneDrive/Academia/HKU_Influenza/RSV_results/
-
 bash /mnt/c/Users/volca/OneDrive/Academia/HKU_Influenza/RSV_results/rsv_irma_labelled_xargs.sh
-
-bash /mnt/c/Users/volca/OneDrive/Academia/HKU_Influenza/RSV_results/threefour.sh
-
-cd /mnt/c/Users/volca/OneDrive/Academia/HKU_Influenza/RSV_results/test_irma
-
 bash /mnt/c/Users/volca/OneDrive/Academia/HKU_Influenza/RSV_results/rsv_mafft_iqtree.sh
 
 
