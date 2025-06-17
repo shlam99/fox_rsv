@@ -24,15 +24,12 @@ PS1="[\u@\h \D{%Y%m%d-%H:%M:%S}]\$"
 # Use all cores (inconsistent!)
 THREADS=$(nproc --all)
 
+
 cd /mnt/e/
+cd /Volumes/Extreme\ SSD/
 cd /mnt/c/Users/volca/OneDrive/Academia/HKU_Influenza/RSV_results/
 bash /mnt/c/Users/volca/OneDrive/Academia/HKU_Influenza/RSV_results/rsv_irma_labelled_xargs.sh
 bash /mnt/c/Users/volca/OneDrive/Academia/HKU_Influenza/RSV_results/rsv_mafft_iqtree.sh
 
 
-cd /mnt/e/20250322_2D2H_1009/20250322_2H_bam
-bash /mnt/c/Users/volca/OneDrive/Academia/HKU_Influenza/RSV_results/threefour.sh
-cd /mnt/e/20250323_1H_10/20250323_1H_bam
-bash /mnt/c/Users/volca/OneDrive/Academia/HKU_Influenza/RSV_results/threefour.sh
-cd /mnt/e/20250328_3G_18/20250328_3G_bam
-bash /mnt/c/Users/volca/OneDrive/Academia/HKU_Influenza/RSV_results/threefour.sh
+
