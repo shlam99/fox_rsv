@@ -16,14 +16,18 @@ Scripts in use: config_empty.sh, rsv_irma_labelled_xargs.sh, rsv_mafft_iqtree.sh
 ------------------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------------------
 # Activate miniconda3 (for some terminal)
+```bash
 source ~/miniconda3/bin/activate  
-
+```
 # Add timestamp to WSL
+```bash
 PS1="[\u@\h \D{%Y%m%d-%H:%M:%S}]\$"
-
+```
 # Use all cores (inconsistent!)
+```bash
 THREADS=$(nproc --all)
-
+```
+# Frequent Commands
 ```bash
 cd /mnt/e/
 cd /Volumes/Extreme\ SSD/
