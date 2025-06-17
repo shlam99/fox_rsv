@@ -42,7 +42,7 @@ get_sample_id() {
 REFERENCE_GENOME=""
 
 # Filtering Parameters
-THREADS=$(nproc --all)
+THREADS=8
 MIN_QUALITY=7
 MIN_LENGTH=500
 MAX_LENGTH=50000
