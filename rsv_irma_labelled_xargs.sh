@@ -18,7 +18,7 @@ START_TIME=$(date +%s)
 ########################################
 # Step 0: Setup and dependency checks
 ########################################
-echo "Starting fox pipeline on ${BATCH}..."
+echo "Starting fox RSV pipeline on ${BATCH}..."
 echo "Step 0: Setting up directory structure, checking input files, and checking dependencies..."
 
 # Check for required tools
