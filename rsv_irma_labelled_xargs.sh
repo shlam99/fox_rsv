@@ -19,6 +19,7 @@ START_TIME=$(date +%s)
 # Step 0: Setup and dependency checks
 ########################################
 echo "Starting fox RSV pipeline on ${BATCH}..."
+echo "Sample prefix is ${SAMPLE_PREFIX}..."
 echo "Step 0: Setting up directory structure, checking input files, and checking dependencies..."
 
 # Check for required tools
@@ -274,5 +275,5 @@ echo "- RSVBD: irma_consensus/RSVBD_${BATCH}.fasta"
 echo "========================================"
 
 END_TIME=$(date +%s)
-echo "Total pipeline runtime: $((END_TIME - START_TIME)) seconds"
+echo "Total pipeline runtime for ${BATCH}: $((END_TIME - START_TIME)) seconds"
 
