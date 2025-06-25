@@ -121,9 +121,9 @@ echo "Output files: irma_results/barcode01-24/amended_consensus/barcode01-24.fa"
 echo "========================================"
 
 ########################################
-# Step 3: Select and pool consensus sequences
+# Step 3: Pool typed consensus sequences into BatchID/BarcodeXX/SampleID labelled consensus
 ########################################
-echo "Step 3: Selecting and pooling consensus sequences by RSV type..."
+echo "Step 3: Pool typed consensus sequences into BatchID/BarcodeXX/SampleID labelled consensus for ${BATCH}..."
 
 # Make directory
 mkdir -p irma_consensus
@@ -182,13 +182,13 @@ for type in RSVA RSVB RSVAD RSVBD; do
     fi
 done
 
-# Count sequences
-RSVA_COUNT=0; [ -f "irma_consensus/RSVA_consensus.fasta" ] && RSVA_COUNT=$(grep -c "^>" irma_consensus/RSVA_consensus.fasta)
-RSVB_COUNT=0; [ -f "irma_consensus/RSVB_consensus.fasta" ] && RSVB_COUNT=$(grep -c "^>" irma_consensus/RSVB_consensus.fasta)
-RSVAD_COUNT=0; [ -f "irma_consensus/RSVAD_consensus.fasta" ] && RSVAD_COUNT=$(grep -c "^>" irma_consensus/RSVAD_consensus.fasta)
-RSVBD_COUNT=0; [ -f "irma_consensus/RSVBD_consensus.fasta" ] && RSVBD_COUNT=$(grep -c "^>" irma_consensus/RSVBD_consensus.fasta)
+# Count sequences in batch-labeled files
+RSVA_COUNT=$(grep -c "^>" irma_consensus/RSVA_consensus_${BATCH}.fasta 2>/dev/null || echo 0)
+RSVB_COUNT=$(grep -c "^>" irma_consensus/RSVB_consensus_${BATCH}.fasta 2>/dev/null || echo 0)
+RSVAD_COUNT=$(grep -c "^>" irma_consensus/RSVAD_consensus_${BATCH}.fasta 2>/dev/null || echo 0)
+RSVBD_COUNT=$(grep -c "^>" irma_consensus/RSVBD_consensus_${BATCH}.fasta 2>/dev/null || echo 0)
 
-step_complete "3" "Success!!: Pooled RSVs (A:$RSVA_COUNT B:$RSVB_COUNT AD:$RSVAD_COUNT BD:$RSVBD_COUNT)"
+step_complete "3" "Pooled!! BatchID/BarcodeXX/SampleID RSVs (A:$RSVA_COUNT B:$RSVB_COUNT AD:$RSVAD_COUNT BD:$RSVBD_COUNT)"
 
 echo ""
 echo "========================================"
@@ -200,9 +200,9 @@ echo "- RSVBD: irma_consensus/RSVBD_consensus_${BATCH}.fasta"
 echo "========================================"
 
 ########################################
-# Step 4: Create batch-labeled versions with sample IDs
+# Step 4: Pool typed consensus sequences into SampleID labelled consensus
 ########################################
-echo "Step 4: Creating batch-labeled consensus files (${BATCH})..."
+echo "Step 4: Pool typed consensus sequences into SampleID only labelled consensus for ${BATCH}..."
 
 # Make directory
 mkdir -p irma_consensus
@@ -257,13 +257,13 @@ for type in RSVA RSVB RSVAD RSVBD; do
     fi
 done
 
-# Count sequences in batch-labeled files
+# Count sequences in sampleID-labelled files
 BATCH_RSVA_COUNT=$(grep -c "^>" irma_consensus/RSVA_${BATCH}.fasta 2>/dev/null || echo 0)
 BATCH_RSVB_COUNT=$(grep -c "^>" irma_consensus/RSVB_${BATCH}.fasta 2>/dev/null || echo 0)
 BATCH_RSVAD_COUNT=$(grep -c "^>" irma_consensus/RSVAD_${BATCH}.fasta 2>/dev/null || echo 0)
 BATCH_RSVBD_COUNT=$(grep -c "^>" irma_consensus/RSVBD_${BATCH}.fasta 2>/dev/null || echo 0)
 
-step_complete "4" "Success!!: Batch-labeled RSVs (A:$BATCH_RSVA_COUNT B:$BATCH_RSVB_COUNT AD:$BATCH_RSVAD_COUNT BD:$BATCH_RSVBD_COUNT)"
+step_complete "4" "Pooled!! SampleID-labeled RSVs (A:$BATCH_RSVA_COUNT B:$BATCH_RSVB_COUNT AD:$BATCH_RSVAD_COUNT BD:$BATCH_RSVBD_COUNT)"
 
 echo ""
 echo "========================================"
