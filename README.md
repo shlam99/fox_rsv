@@ -1,16 +1,16 @@
 This is a data analysis pipeline developed by Pr Vijaykrishna Dhanasekaran Lab to process sequenced NBD114.24 barcoded RSV samples to consensus sequences & phylogenetic trees through quality filtering, subtyping/alignment/consensus generation using custom IRMA module, and optional mafft alignment/iqtree tree construction.
 Scripts in use: config_empty.sh, rsv_irma_labelled_xargs.sh, rsv_mafft_iqtree.sh
 
-0)  obtain fastq/bam files of samples  (Dorado Post Sequencing Analysis - Barcoding)
+0) 	obtain fastq/bam files of samples  (Dorado Post Sequencing Analysis - Barcoding)
 1)	conda install -y samtools filtlong irma mafft iqtree
 2)	which samtools filtlong irma mafft iqtree; samtools filtlong irma mafft iqtree --version
-3)	rename reference fasta to consensus.fasta & replace the one in /RSV_ont/reference/
-4)	put /RSV_ont/ folder in /miniconda3/bin/IRMA_RES/modules/
-5)	put in same directory config_empty.sh, rsv_irma_labelled_xargs.sh
-6)	change details & rename config_empty.shto config.sh
-7)	use rsv_commands.txt for commands
-8)	bash rsv_irma_labelled_xargs.sh
-9)  bash rsv_mafft_iqtree.sh
+4)	put RSV_ont folder in miniconda3/bin/IRMA_RES/modules/
+5)	put config_empty.sh in same directory; change details & rename config_empty.shto config.sh
+7)	download rsv_irma_labelled_qc.sh; create script.sh for cd & bash commands
+8)	cd [sample directory]; bash [script directory]/rsv_irma_labelled_qc.sh
+9) 	copy /irma_consensus/s into one folder; bash rsv_mafft_iqtree.sh
+
+After finishing, dorado barcoding_bam is in data acquisition unit, delete the bams in transfer hard drive & put the processed unfiltered fastq.gz files into new folder /hide/ (so when re-run script, script runs IRMA on /qc_reads/ data instead of filtlong on these data)
 
 
 ------------------------------------------------------------------------------------------------------
