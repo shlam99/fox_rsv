@@ -27,6 +27,11 @@ PS1="[\u@\h \D{%Y%m%d-%H:%M:%S}]\$"
 ```bash
 THREADS=$(nproc --all)
 ```
+# Combine fasta files
+```bash
+find . -type f \( -name "*.fasta" -o -name "*.fa" \) -exec cat {} \; > pooled.fasta
+echo "" >> pooled.fasta
+```
 # Frequent Commands
 ```bash
 cd /mnt/e/
