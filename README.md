@@ -33,12 +33,11 @@ find . -type d \( -name "irma_consensus" -o -name "irma_results" \) -exec rm -rf
 ```
 # Extract fasta from irma_consensus
 ```bash
-find . -type d -name "irma_consensus" -exec cp -n -v {}/* . \;
+find . -type f -path "*/irma_consensus/*.fasta" -exec cp -nv {} . \;
 ```
 # Combine fasta files
 ```bash
-find . -type f \( -name "*.fasta" -o -name "*.fa" \) -exec cat {} \; > pooled.fasta
-echo "" >> pooled.fasta
+find . -type f \( -name "*.fasta" -o -name "*.fa" \) -exec cat {} \; > pooled.fasta; echo "" >> pooled.fasta
 ```
 # Frequent Commands
 ```bash
