@@ -27,6 +27,14 @@ PS1="[\u@\h \D{%Y%m%d-%H:%M:%S}]\$"
 ```bash
 THREADS=$(nproc --all)
 ```
+# Remove irma_consensus & irma_results directories
+```bash
+find . -type d \( -name "irma_consensus" -o -name "irma_results" \) -exec rm -rf {} \;
+```
+# Extract fasta from irma_consensus
+```bash
+find . -type d -name "irma_consensus" -exec cp -n -v {}/* . \;
+```
 # Combine fasta files
 ```bash
 find . -type f \( -name "*.fasta" -o -name "*.fa" \) -exec cat {} \; > pooled.fasta
