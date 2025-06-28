@@ -4,11 +4,16 @@ Scripts in use: config_empty.sh, rsv_irma_labelled_xargs.sh, rsv_mafft_iqtree.sh
 0) 	obtain fastq/bam files of samples  (Dorado Post Sequencing Analysis - Barcoding)
 1)	conda install -y samtools filtlong irma mafft iqtree
 2)	which samtools filtlong irma mafft iqtree; samtools filtlong irma mafft iqtree --version
-4)	put RSV_ont folder in miniconda3/bin/IRMA_RES/modules/
-5)	put config_empty.sh in same directory; change details & rename config_empty.shto config.sh
-7)	download rsv_irma_labelled_qc.sh; create script.sh for cd & bash commands
-8)	cd [sample directory]; bash [script directory]/rsv_irma_labelled_qc.sh
-9) 	copy /irma_consensus/s into one folder; bash rsv_mafft_iqtree.sh
+3)	put config_empty.sh in same directory; change details & rename config_empty.shto config.sh
+4)	download [script]; create script.sh for cd & bash commands
+5)	cd [sample directory]; bash [script directory]/[script]
+6) 	copy all /irma_consensus/ into one folder; bash rsv_mafft_iqtree.sh
+
+[script]:
+rsv_irma_labelled_xargs.sh samtools/filtlong/irma; using custom RNV_ont IRMA module (put RSV_ont folder in miniconda3/bin/IRMA_RES/modules/)
+rsv_irma_labelled_qc.sh samtools/filtlong/irma; using custom RNV_qc IRMA module; for enhanced QC (put RSV_qc folder in miniconda3/bin/IRMA_RES/modules/)
+rsv_irma_labelled_nanofilt.sh samtools/nanofilt/irma; add nanofilt for less aggressive filtering
+rsv_irma_labelled_medaka.sh samtools/filtlong/irma/medaka; add medaka for ONT-tailored error correction
 
 After finishing, dorado barcoding_bam is in data acquisition unit, delete the bams in transfer hard drive & put the processed unfiltered fastq.gz files into new folder /hide/ (so when re-run script, script runs IRMA on /qc_reads/ data instead of filtlong on these data)
 
