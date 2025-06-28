@@ -42,7 +42,7 @@ find . -type f -path "*/irma_consensus/*.fasta" -exec cp -nv {} . \;
 ```
 # Combine fasta files
 ```bash
-find . -type f \( -name "*.fasta" -o -name "*.fa" \) -exec cat {} \; > pooled.fasta; echo "" >> pooled.fasta
+find . -type f \( -name "*.fasta" -o -name "*.fa" \) -exec cat {} + > pooled.fasta && echo >> pooled.fasta
 ```
 # Frequent Commands
 ```bash
