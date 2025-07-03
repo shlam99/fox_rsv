@@ -34,6 +34,7 @@ THREADS=$(nproc --all)
 ```
 # Remove irma_consensus & irma_results directories
 ```bash
+find . -type d -name "irma_consensus" -exec rm -rf {} \;
 find . -type d \( -name "irma_consensus" -o -name "irma_results" \) -exec rm -rf {} \;
 ```
 # Extract fasta from irma_consensus
