@@ -45,6 +45,10 @@ find . -type f -path "*/irma_consensus/*.fasta" -exec cp -nv {} . \;
 ```bash
 find . -type f \( -name "*.fasta" -o -name "*.fa" \) -exec cat {} + > pooled.fasta && echo >> pooled.fasta
 ```
+# Remove duplicate sequences
+```bash
+awk '/^>/ { if (seen[$0]++) { skip=1 } else { skip=0 } } skip==0' input.fasta > output.fasta
+```
 # Frequent Commands
 ```bash
 cd /mnt/e/
