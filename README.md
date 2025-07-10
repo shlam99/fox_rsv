@@ -47,7 +47,7 @@ find . -type f \( -name "*.fasta" -o -name "*.fa" \) -exec cat {} + > pooled.fas
 ```
 # Remove duplicate sequences
 ```bash
-awk '/^>/ { if (seen[$0]++) { skip=1 } else { skip=0 } } skip==0' input.fasta > output.fasta
+awk '/^>/ { if (seen[$0]++) { skip=1 } else { skip=0 } } skip==0' pooled.fasta > output.fasta
 ```
 # Frequent Commands
 ```bash
